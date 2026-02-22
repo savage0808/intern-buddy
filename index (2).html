@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Intern Buddy Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f172a;--ink2:#1e293b;--ink3:#334155;--slate:#475569;--muted:#94a3b8;--border:#e2e8f0;--surface:#f8fafc;--white:#ffffff;--purple:#6d28d9;--purple2:#7c3aed;--green:#059669;--red:#dc2626;--shlg:0 20px 60px rgba(0,0,0,.18),0 4px 16px rgba(0,0,0,.1);--r:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#0d1117;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:12px;}
+.shell{width:100%;max-width:480px;}
+.card{background:var(--white);border-radius:22px;box-shadow:var(--shlg);display:flex;flex-direction:column;max-height:calc(100vh - 24px);overflow:hidden;}
+.hdr{background:var(--ink);padding:14px 16px 12px;flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(109,40,217,.35) 0%,transparent 70%);pointer-events:none;}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;}
+.hdr-logo{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+.logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:.72rem;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;}
+.logout-btn:hover{background:rgba(255,255,255,.18);}
+.hdr-badge{background:rgba(109,40,217,.3);color:#c4b5fd;font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:5px;border:1px solid rgba(109,40,217,.4);}
+.hdr-body{margin-top:10px;}
+.hdr-title{font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:-.01em;}
+.hdr-sub{font-size:.78rem;color:rgba(255,255,255,.5);margin-top:2px;}
+.conn-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;margin-right:5px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.view{display:none;padding:16px;overflow-y:auto;max-height:calc(100vh - 24px - 88px);}
+.view.active{display:block;animation:fi .2s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+#v-login{padding:28px 24px;}
+.login-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--purple),var(--purple2));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;}
+.login-title{font-size:1.4rem;font-weight:700;color:var(--ink);text-align:center;}
+.login-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-top:4px;margin-bottom:22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.72rem;font-weight:600;color:var(--ink3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
+.field input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:.9rem;font-family:inherit;color:var(--ink);outline:none;transition:border .15s;}
+.field input:focus{border-color:var(--purple);}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:8px;display:none;}
+.section-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.menu-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
+.menu-card:hover{border-color:var(--purple);background:#faf5ff;transform:translateY(-1px);}
+.menu-card-icon{font-size:22px;margin-bottom:8px;display:block;}
+.menu-card-title{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.3;}
+.block-heading{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:10px;line-height:1.3;}
+.block-text{font-size:.85rem;color:var(--slate);line-height:1.6;margin-bottom:10px;}
+.instruction-step{background:var(--surface);border-left:3px solid var(--purple);padding:10px 13px;border-radius:0 8px 8px 0;font-size:.83rem;color:var(--ink3);margin-bottom:8px;line-height:1.5;}
+.senior-alert{background:#fef3c7;border:1.5px solid #fbbf24;border-radius:9px;padding:10px 13px;font-size:.82rem;font-weight:600;color:#92400e;margin-bottom:10px;}
+.link-card{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;text-decoration:none;color:var(--ink);font-size:.85rem;font-weight:500;margin-bottom:8px;transition:all .15s;}
+.link-card:hover{border-color:var(--purple);background:#faf5ff;}
+.senior-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.senior-box{display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 6px;text-decoration:none;color:var(--ink3);font-size:.72rem;font-weight:500;transition:all .15s;}
+.senior-box:hover{border-color:var(--purple);}
+.senior-box img{width:36px;height:36px;border-radius:50%;}
+.block-code{background:#0f172a;color:#e2e8f0;font-family:'DM Mono',monospace;font-size:.82rem;padding:12px 14px;border-radius:9px;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:none;border-radius:9px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;margin-right:4px;transition:all .15s;width:100%;}
+.btn-p{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;box-shadow:0 4px 12px rgba(109,40,217,.25);}
+.btn-p:hover{box-shadow:0 6px 18px rgba(109,40,217,.35);}
+.btn-g{background:var(--surface);color:var(--ink3);border:1.5px solid var(--border);}
+.btn-g:hover{border-color:var(--purple);color:var(--purple);}
+.btn-r{background:var(--red);color:#fff;}
+.btn-s{background:linear-gradient(135deg,#059669,#047857);color:#fff;}
+.btn-sm{padding:7px 12px;font-size:.78rem;width:auto;}
+#v-admin{padding:0;overflow:hidden;}
+.adm-nav{display:flex;border-bottom:1.5px solid var(--border);background:var(--surface);flex-shrink:0;}
+.adm-tab{flex:1;padding:11px 4px;font-size:.72rem;font-weight:600;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2.5px solid transparent;transition:all .15s;}
+.adm-tab.on{color:var(--purple);border-bottom-color:var(--purple);}
+.adm-sec{display:none;padding:16px;overflow-y:auto;max-height:calc(100vh - 24px - 88px - 44px);}
+.adm-sec.on{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:12px;text-align:center;}
+.stat-num{font-size:1.4rem;font-weight:700;color:var(--purple);}
+.stat-lbl{font-size:.68rem;color:var(--muted);margin-top:2px;font-weight:500;}
+.save-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:11px;padding:11px 13px;margin-bottom:12px;}
+.save-banner strong{display:block;font-size:.82rem;color:#166534;margin-bottom:2px;}
+.save-banner span{font-size:.75rem;color:#15803d;}
+.adm-list-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;margin-bottom:7px;}
+.adm-item-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.adm-item-info{flex:1;min-width:0;}
+.adm-item-title{font-size:.85rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.adm-item-id{font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px;}
+.adm-item-acts{display:flex;gap:5px;flex-shrink:0;}
+.act-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .12s;}
+.act-btn:hover{border-color:var(--purple);color:var(--purple);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);}
+.sec-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.sec-box-title{font-size:.8rem;font-weight:700;color:var(--ink);margin-bottom:10px;}
+.sec-box.danger{border-color:#fecaca;background:#fff5f5;}
+.sec-box.danger .sec-box-title{color:var(--red);}
+.hash-note{background:#ede9fe;border:1.5px solid #c4b5fd;border-radius:9px;padding:10px 12px;font-size:.75rem;color:#5b21b6;margin-bottom:12px;line-height:1.5;}
+.loading-screen{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:999;}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(109,40,217,.2);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-txt{color:rgba(255,255,255,.5);font-size:.82rem;}
+.config-screen{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;padding:20px;z-index:998;}
+.config-card{background:var(--white);border-radius:20px;padding:24px;width:100%;max-width:440px;box-shadow:var(--shlg);max-height:90vh;overflow-y:auto;}
+.config-title{font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.config-sub{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.config-step{background:var(--surface);border-left:3px solid var(--purple);padding:9px 12px;border-radius:0 8px 8px 0;font-size:.78rem;color:var(--ink3);margin-bottom:7px;line-height:1.6;}
+.config-step code{background:#ede9fe;color:var(--purple);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.75rem;}
+.config-field{margin-bottom:9px;}
+.config-field label{display:block;font-size:.7rem;font-weight:700;color:var(--slate);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
+.config-field input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:'DM Mono',monospace;color:var(--ink);outline:none;}
+.config-field input:focus{border-color:var(--purple);}
+.config-err{color:var(--red);font-size:.76rem;margin-top:6px;display:none;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s cubic-bezier(.32,1,.45,1);padding:20px;}
+.modal-bg.open .modal{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:14px;}
+.btp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
+.btp-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 4px;cursor:pointer;text-align:center;transition:all .12s;}
+.btp-btn:hover,.btp-btn.sel{border-color:var(--purple);background:#faf5ff;}
+.btp-btn .ico{font-size:16px;display:block;margin-bottom:3px;}
+.btp-btn .lbl{font-size:.65rem;font-weight:600;color:var(--ink3);}
+.btp-btn.sel .lbl{color:var(--purple);}
+.bfe{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+.bfe-title{font-size:.7rem;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.bfe input,.bfe textarea,.bfe select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.83rem;font-family:inherit;color:var(--ink);outline:none;margin-bottom:7px;background:var(--white);}
+.bfe input:focus,.bfe textarea:focus,.bfe select:focus{border-color:var(--purple);}
+.bfe textarea{resize:vertical;min-height:70px;}
+.blk-editor{margin-bottom:10px;}
+.blk-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;margin-bottom:5px;}
+.blk-badge{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:5px;background:#ede9fe;color:var(--purple);flex-shrink:0;text-transform:uppercase;}
+.blk-prev{font-size:.76rem;color:var(--slate);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.blk-acts{display:flex;gap:4px;flex-shrink:0;}
+.bact{width:24px;height:24px;border-radius:5px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-size:.72rem;display:flex;align-items:center;justify-content:center;}
+.bact:hover{border-color:var(--purple);color:var(--purple);}
+.bact.bad:hover{border-color:var(--red);color:var(--red);}
+.blk-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:14px;font-style:italic;}
+.prev-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.prev-box{background:var(--surface);border:1.5px dashed var(--border);border-radius:10px;padding:12px;min-height:50px;}
+.cnt-row{display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px;}
+.cnt-del{height:28px;border:1px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+.confirm-body{text-align:center;padding:8px 0;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:24px;font-size:.82rem;font-weight:500;z-index:999;transition:transform .3s cubic-bezier(.32,1,.45,1);white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.saving-pill{position:fixed;top:12px;right:12px;background:var(--purple);color:#fff;padding:5px 11px;border-radius:20px;font-size:.7rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.saving-pill.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-spinner"></div>
+  <div class="loading-txt" id="loadingTxt">Connecting to Firebase…</div>
+</div>
+
+<div class="config-screen" id="configScreen" style="display:none">
+  <div class="config-card">
+    <div style="font-size:32px;margin-bottom:10px">🔥</div>
+    <div class="config-title">Connect to Firebase</div>
+    <div class="config-sub">One-time setup. Your Firebase config is saved in this browser only — interns never see it.</div>
+    <div class="config-step">1. Go to <strong>console.firebase.google.com</strong> → create a project named <code>intern-buddy</code></div>
+    <div class="config-step">2. <strong>Build → Realtime Database</strong> → Create database → choose <code>Start in test mode</code></div>
+    <div class="config-step">3. <strong>Project Settings ⚙️ → Your apps → Add web app</strong> → copy the values below</div>
+    <div class="config-step">4. In <strong>Realtime Database → Rules</strong> tab, paste:<br><code>{"rules":{".read":"auth == null || auth != null",".write":"auth == null || auth != null"}}</code><br>then Publish</div>
+    <div class="config-field"><label>Database URL</label><input id="cfg-url" placeholder="https://intern-buddy-xxxxx-default-rtdb.firebaseio.com"></div>
+    <div class="config-field"><label>API Key</label><input id="cfg-key" placeholder="AIzaSy..."></div>
+    <div class="config-field"><label>Project ID</label><input id="cfg-pid" placeholder="intern-buddy-xxxxx"></div>
+    <div class="config-err" id="cfg-err">Please fill in all three fields.</div>
+    <button class="btn btn-p" style="margin-top:10px;width:100%" onclick="saveConfig()">Connect & Launch →</button>
+  </div>
+</div>
+
+<div class="saving-pill" id="savingPill">☁️ Saving…</div>
+
+<div class="shell" id="appShell" style="display:none">
+  <div class="card">
+    <div class="hdr">
+      <div class="hdr-top">
+        <span class="hdr-logo">Intern Buddy Pro</span>
+        <div id="hdrRight"><span class="hdr-badge">v5 · Firebase</span></div>
+      </div>
+      <div class="hdr-body">
+        <div class="hdr-title" id="hTitle">Operations Hub</div>
+        <div class="hdr-sub" id="hSub"><span class="conn-dot"></span>Live · Firebase connected</div>
+      </div>
+    </div>
+    <div id="dynViews"></div>
+    <div class="view active" id="v-login">
+      <div style="text-align:center;margin-bottom:22px">
+        <div class="login-icon">💼</div>
+        <div class="login-title">Welcome Back</div>
+        <div class="login-sub">Sign in to continue</div>
+      </div>
+      <div class="field"><label>Username</label><input id="l-user" placeholder="Enter username" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="Enter password" autocomplete="current-password"></div>
+      <button class="btn-login" onclick="doLogin()">Sign In</button>
+      <div class="login-err" id="loginErr">Incorrect username or password.</div>
+    </div>
+    <div class="view" id="v-main">
+      <div class="section-title">Quick Actions</div>
+      <div class="main-grid" id="mainGrid"></div>
+    </div>
+    <div class="view" id="v-admin" style="padding:0;overflow:hidden;max-height:none">
+      <div class="adm-nav">
+        <div class="adm-tab on" onclick="admTab('dash',this)">Dashboard</div>
+        <div class="adm-tab" onclick="admTab('menu',this)">Menu Items</div>
+        <div class="adm-tab" onclick="admTab('extra',this)">Sub-Views</div>
+        <div class="adm-tab" onclick="admTab('users',this)">Security</div>
+      </div>
+      <div id="as-dash" class="adm-sec on">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="stMenu">—</div><div class="stat-lbl">Menu Items</div></div>
+          <div class="stat-card"><div class="stat-num" id="stSub">—</div><div class="stat-lbl">Sub-Views</div></div>
+          <div class="stat-card"><div class="stat-num">2</div><div class="stat-lbl">Users</div></div>
+        </div>
+        <div class="save-banner">
+          <strong>🔥 Auto-Save Active</strong>
+          <span>Every change saves to Firebase instantly. All interns see updates immediately — no file needed.</span>
+        </div>
+        <button class="btn btn-p" style="margin-bottom:8px" onclick="openItemModal()">＋ New Menu Item</button>
+        <button class="btn btn-g" onclick="openExtraModal()">＋ New Sub-View</button>
+      </div>
+      <div id="as-menu" class="adm-sec">
+        <button class="btn btn-p btn-sm" style="margin-bottom:12px" onclick="openItemModal()">＋ New Menu Item</button>
+        <div id="admMenuList"></div>
+      </div>
+      <div id="as-extra" class="adm-sec">
+        <button class="btn btn-p btn-sm" style="margin-bottom:12px" onclick="openExtraModal()">＋ New Sub-View</button>
+        <div id="admExtraList"></div>
+      </div>
+      <div id="as-users" class="adm-sec">
+        <div class="hash-note">🔐 Passwords are stored as <strong>SHA-256 hashes</strong> in Firebase. Nobody — not even you — can read the actual password from the database. Only the correct password will match.</div>
+        <div class="sec-box">
+          <div class="sec-box-title">👤 Admin Account</div>
+          <div class="field" style="margin-bottom:8px"><label>Username</label><input value="admin" readonly style="opacity:.5"></div>
+          <div class="field" style="margin-bottom:8px"><label>New Password</label><input id="sec-ap" type="password" placeholder="Enter new password"></div>
+          <button class="btn btn-p btn-sm" onclick="updatePw('admin','sec-ap')">Update Admin Password</button>
+        </div>
+        <div class="sec-box">
+          <div class="sec-box-title">👤 Intern Account</div>
+          <div class="field" style="margin-bottom:8px"><label>Username</label><input value="intern" readonly style="opacity:.5"></div>
+          <div class="field" style="margin-bottom:8px"><label>New Password</label><input id="sec-ip" type="password" placeholder="Leave blank = no password required"></div>
+          <button class="btn btn-p btn-sm" onclick="updatePw('intern','sec-ip')">Update Intern Password</button>
+        </div>
+        <div class="sec-box danger">
+          <div class="sec-box-title">⚠️ Danger Zone</div>
+          <div style="font-size:.75rem;color:var(--slate);margin-bottom:10px">Reset ALL menu items and sub-views to factory defaults. Passwords are kept.</div>
+          <button class="btn btn-r btn-sm" onclick="doReset()">Reset All Content</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Menu Item -->
+<div class="modal-bg" id="m-item">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mItemTitle">Create Menu Item</div>
+    <input type="hidden" id="mi-idx">
+    <div style="display:grid;grid-template-columns:64px 1fr;gap:8px;margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Icon</label><input id="mi-icon" placeholder="💻" maxlength="4"></div>
+      <div class="field" style="margin:0"><label>Title</label><input id="mi-title" placeholder="Hardware Request"></div>
+    </div>
+    <div class="field"><label>View ID <span style="font-weight:400;color:var(--muted);text-transform:none">(unique, no spaces — e.g. hw-1)</span></label><input id="mi-vid" style="font-family:'DM Mono',monospace"></div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px">Content Blocks</div>
+    <div class="btp" id="btpItem"></div>
+    <div id="bfeItem"></div>
+    <button class="btn btn-s btn-sm" id="addBlkItem" style="margin-bottom:10px">＋ Add Block</button>
+    <div class="blk-editor" id="blkEditorItem"><div class="blk-empty">No blocks yet. Select a type above and click Add Block.</div></div>
+    <div class="prev-lbl">Live Preview</div>
+    <div class="prev-box" id="prevItem"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-g btn-sm" onclick="closeModal('m-item')">Cancel</button>
+      <button class="btn btn-p btn-sm" style="flex:1" onclick="saveItem()">Save to Firebase ☁️</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Sub-View -->
+<div class="modal-bg" id="m-extra">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mExtraTitle">Create Sub-View</div>
+    <input type="hidden" id="ex-key">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Label</label><input id="ex-lbl" placeholder="Hardware Step 2"></div>
+      <div class="field" style="margin:0"><label>View ID</label><input id="ex-vid" placeholder="hw-2" style="font-family:'DM Mono',monospace"></div>
+    </div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px">Content Blocks</div>
+    <div class="btp" id="btpExtra"></div>
+    <div id="bfeExtra"></div>
+    <button class="btn btn-s btn-sm" id="addBlkExtra" style="margin-bottom:10px">＋ Add Block</button>
+    <div class="blk-editor" id="blkEditorExtra"><div class="blk-empty">No blocks yet. Select a type above and click Add Block.</div></div>
+    <div class="prev-lbl">Live Preview</div>
+    <div class="prev-box" id="prevExtra"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-g btn-sm" onclick="closeModal('m-extra')">Cancel</button>
+      <button class="btn btn-p btn-sm" style="flex:1" onclick="saveExtra()">Save to Firebase ☁️</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm -->
+<div class="modal-bg" id="m-confirm">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="confirm-body">
+      <div style="font-size:36px;margin-bottom:8px" id="cIcon">⚠️</div>
+      <div style="font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px" id="cTitle"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-g btn-sm" style="flex:1" onclick="closeModal('m-confirm')">Cancel</button>
+      <button class="btn btn-r btn-sm" style="flex:1" id="cOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Block Edit -->
+<div class="modal-bg" id="m-block">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Block</div>
+    <div id="blkEditForm"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-g btn-sm" onclick="closeModal('m-block')">Cancel</button>
+      <button class="btn btn-p btn-sm" style="flex:1" onclick="saveBlkEdit()">Update Block</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getDatabase,ref,get,set,onValue}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── CONFIG ──
+function getCfg(){try{return JSON.parse(localStorage.getItem('ibCfg')||'null');}catch{return null;}}
+function setCfg(c){localStorage.setItem('ibCfg',JSON.stringify(c));}
+
+// ── SHA-256 ──
+async function sha256(s){
+  if(!s)return'';
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+// ── STATE ──
+let DB=null,CU=null;
+let D={menuItems:[],extraViews:{},users:{}};
+const MS={
+  item:{blocks:[],editIdx:null,blkEditIdx:null,_curType:null,_curUid:null},
+  extra:{blocks:[],editKey:null,blkEditIdx:null,_curType:null,_curUid:null}
+};
+
+const BT=[
+  {id:'heading',ico:'H₁',lbl:'Heading'},
+  {id:'text',ico:'¶',lbl:'Text'},
+  {id:'step',ico:'✓',lbl:'Step'},
+  {id:'alert',ico:'⚠',lbl:'Alert'},
+  {id:'link',ico:'🔗',lbl:'Link'},
+  {id:'button',ico:'▶',lbl:'Button'},
+  {id:'contact',ico:'👤',lbl:'Contact'},
+  {id:'code',ico:'</>',lbl:'Code'},
+  {id:'nav',ico:'←→',lbl:'Nav'},
+];
+const BFTITLES={heading:'Heading Block',text:'Text Block',step:'Step Block',alert:'Alert Block',link:'Link Block',button:'Button Block',contact:'Contact Block',code:'Code Block',nav:'Navigation Button'};
+
+// ── DEFAULT DATA ──
+const DEFAULTS={
+  menuItems:[
+    {icon:'💻',title:'Hardware Request',viewId:'hw-1',content:'<h3 class="block-heading">1. Contact Senior</h3><p class="block-text">Share ticket number with your senior before proceeding.</p><button class="btn btn-p" data-view="hw-2">Next: Headcount Type →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    {icon:'📱',title:'Roaming Request',viewId:'ro-1',content:'<h3 class="block-heading">Roaming Verification</h3><p class="block-text">Select your carrier to begin activation:</p><button class="btn btn-p" data-view="ro-maxis">012 — Maxis</button><button class="btn btn-g" data-view="ro-celcom">019 — Celcom</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    {icon:'🔍',title:'Inspection Room',viewId:'in-1',content:'<h3 class="block-heading">Inspection Checklist</h3><div class="instruction-step">✅ Check: TV, Docking Display, Sound, Charging, Camera.</div><button class="btn btn-p" data-view="main">← Back to Main Menu</button>'},
+    {icon:'🛠️',title:'Troubleshoot Laptop',viewId:'ts-menu',content:'<h3 class="block-heading">Common Problems</h3><p class="block-text">Select the issue you are troubleshooting:</p><button class="btn btn-g" data-view="ts-power">⚡ Charging / Power</button><button class="btn btn-g" data-view="ts-lag">🐌 Lagging / Slow</button><button class="btn btn-g" data-view="ts-heat">🌡️ Overheating</button><button class="btn btn-g" data-view="ts-battery">🔋 Battery Issues</button><button class="btn btn-g" data-view="ts-blue">💀 Blue Screen (BSOD)</button><button class="btn btn-p" data-view="main">← Back to Main Menu</button>'},
+    {icon:'📅',title:'Event Setup',viewId:'ev-menu',content:'<h3 class="block-heading">Select Location</h3><button class="btn btn-g" data-view="ev-soon">🏢 Level 14</button><button class="btn btn-g" data-view="ev-soon">🏢 Level 17</button><button class="btn btn-g" data-view="ev-soon">🏙️ Level 5 Pinnacle</button><button class="btn btn-p" data-view="main">← Back to Main Menu</button>'}
+  ],
+  extraViews:{
+    'hw-2':{label:'Hardware — Step 2',content:'<h3 class="block-heading">2. Headcount & Assets</h3><p class="block-text">Contractor: G8, G9 | Permanent: G9–G12</p><button class="btn btn-p" data-view="hw-3">Device Available → Next</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-3':{label:'Hardware — Step 3',content:'<h3 class="block-heading">3. Sticky Note</h3><div class="instruction-step">Write User ID, Email, and Temp Password on a note.</div><button class="btn btn-p" data-view="hw-4">Next: Setup Google →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-4':{label:'Hardware — Step 4',content:'<h3 class="block-heading">4. Account Setup</h3><div class="instruction-step">Login to laptop → Sign in Google Chrome → Sign in Google Drive</div><button class="btn btn-p" data-view="hw-5">Next: Bookmarks →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-5':{label:'Hardware — Step 5',content:'<h3 class="block-heading">5. Bookmarks</h3><div class="instruction-step">Enable Bookmark Bar → Show Bookmarks</div><button class="btn btn-p" data-view="hw-6">Next: Software →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-6':{label:'Hardware — Step 6',content:'<h3 class="block-heading">6. Software Center</h3><div class="instruction-step">Install: HP Universal Printing & MyQ Desktop</div><button class="btn btn-p" data-view="hw-7">Next: Policy →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-7':{label:'Hardware — Step 7',content:'<h3 class="block-heading">7. Policy Update</h3><p class="block-text">Run CMD as administrator:</p><div class="block-code">gpupdate /force</div><button class="btn btn-p" data-view="hw-8">Next: Config Manager →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-8':{label:'Hardware — Step 8',content:'<h3 class="block-heading">8. Control Panel</h3><p class="block-text">Configuration Manager → Actions</p><div class="instruction-step">Run: Application Deployment Evaluation Cycle</div><button class="btn btn-p" data-view="hw-9">Next: Prepare Bag →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'hw-9':{label:'Hardware — Step 9',content:'<h3 class="block-heading">9. Final — Prepare Bag</h3><div class="instruction-step">✅ Laptop ✅ Charger ✅ Mouse ✅ Wired Headset</div><button class="btn btn-p" data-view="main">🎉 All Done!</button>'},
+    'ro-maxis':{label:'Roaming — Maxis',content:'<h3 class="block-heading">Maxis Hub Activation</h3><a href="https://businesshub.maxis.com.my/auth/sso" target="_blank" class="link-card">📡 Open Maxis Business Hub</a><div class="instruction-step">Paste number and activate. Choose correct date.</div><button class="btn btn-p" data-view="ro-sheet">Next: Update Sheet →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'ro-celcom':{label:'Roaming — Celcom',content:'<h3 class="block-heading">Celcom BizCare Activation</h3><a href="https://bizcare.celcom.com.my/bizcareui" target="_blank" class="link-card">📡 Open Celcom BizCare</a><div class="instruction-step">Choose company pic. Can be done 1 day early.</div><button class="btn btn-p" data-view="ro-sheet">Next: Update Sheet →</button><button class="btn btn-g" data-view="main">← Back</button>'},
+    'ro-sheet':{label:'Roaming — Spreadsheet',content:'<h3 class="block-heading">Update Spreadsheet</h3><a href="https://docs.google.com/spreadsheets/d/1y49wP5__FdenXJj3D9H3zE1vyZ6pBwh6SLvcBuBMSoo/edit" target="_blank" class="link-card">📋 Roaming Spreadsheet</a><button class="btn btn-p" data-view="main">✅ Close Ticket & Finish</button>'},
+    'ev-soon':{label:'Event — Coming Soon',content:'<h3 class="block-heading">Coming Soon</h3><div class="instruction-step">Setup instructions will be added soon.</div><button class="btn btn-p" data-view="ev-menu">← Back to Locations</button>'},
+    'ts-power':{label:'TS — Power',content:'<h3 class="block-heading">Charging / Power Issue</h3><div class="instruction-step"><strong>Power Drain:</strong> Unplug everything. Long press Power 30 sec.</div><a href="https://support.hp.com" target="_blank" class="link-card">🔧 HP Support Portal</a><button class="btn btn-g" data-view="ts-menu">← Back</button>'},
+    'ts-lag':{label:'TS — Lagging',content:'<h3 class="block-heading">Lagging / Slow</h3><button class="btn btn-p" data-view="ts-lag-1">Start Step-by-Step →</button><button class="btn btn-g" data-view="ts-menu">← Cancel</button>'},
+    'ts-lag-1':{label:'TS — Lag Step 1',content:'<h3 class="block-heading">Step 1: Clear Cache</h3><div class="instruction-step">Clear Temp files and Browser Cache.</div><button class="btn btn-p" data-view="ts-lag-2">Done → Next Step</button><button class="btn btn-g" data-view="ts-menu">← Back</button>'},
+    'ts-lag-2':{label:'TS — Lag Step 2',content:'<h3 class="block-heading">Step 2: Updates</h3><div class="instruction-step">Update BIOS and Google Chrome.</div><button class="btn btn-p" data-view="ts-menu">✅ Finish</button>'},
+    'ts-heat':{label:'TS — Overheating',content:'<h3 class="block-heading">Overheating</h3><a href="https://support.hp.com" target="_blank" class="link-card">🔧 Check Warranty / Report Case</a><button class="btn btn-g" data-view="ts-menu">← Back</button>'},
+    'ts-battery':{label:'TS — Battery',content:'<h3 class="block-heading">Battery Problems</h3><div class="senior-alert">⚠️ REQUIRES SENIOR PERMISSION</div><button class="btn btn-g" data-view="ts-menu">← Back</button>'},
+    'ts-blue':{label:'TS — BSOD',content:'<h3 class="block-heading">Blue Screen (BSOD)</h3><div class="senior-alert">⚠️ GET SENIOR PERMISSION BEFORE REFORMAT</div><button class="btn btn-g" data-view="ts-menu">← Back</button>'}
+  }
+};
+
+// ── FIREBASE INIT ──
+async function initFirebase(){
+  const cfg=getCfg();
+  if(!cfg){showConfig();return;}
+  try{
+    const app=initializeApp({apiKey:cfg.key,authDomain:cfg.pid+'.firebaseapp.com',databaseURL:cfg.url,projectId:cfg.pid,storageBucket:cfg.pid+'.appspot.com'});
+    DB=getDatabase(app);
+    await loadData();
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('appShell').style.display='block';
+    showView('login');
+    buildBtpGrids();
+    // Live listener - updates app when another admin saves
+    onValue(ref(DB,'appData'),snap=>{
+      if(snap.exists()&&CU){
+        const raw=snap.val();
+        D.menuItems=raw.menuItems?Object.values(raw.menuItems):[];
+        D.extraViews=raw.extraViews||{};
+        D.users=raw.users||{};
+        renderDynViews();renderMainMenu();
+        if(CU==='admin'){renderAdmMenuList();renderAdmExtraList();updateStats();}
+      }
+    });
+  }catch(e){
+    console.error(e);
+    showConfig('Connection failed. Check your config values and try again.');
+  }
+}
+
+function showConfig(err){
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('configScreen').style.display='flex';
+  if(err){const el=document.getElementById('cfg-err');el.textContent=err;el.style.display='block';}
+}
+
+window.saveConfig=function(){
+  const url=document.getElementById('cfg-url').value.trim();
+  const key=document.getElementById('cfg-key').value.trim();
+  const pid=document.getElementById('cfg-pid').value.trim();
+  if(!url||!key||!pid){document.getElementById('cfg-err').style.display='block';return;}
+  setCfg({url,key,pid});
+  document.getElementById('configScreen').style.display='none';
+  document.getElementById('loadingScreen').style.display='flex';
+  initFirebase();
+};
+
+// ── DATA LOAD ──
+async function loadData(){
+  const snap=await get(ref(DB,'appData'));
+  if(snap.exists()){
+    const raw=snap.val();
+    D.menuItems=raw.menuItems?Object.values(raw.menuItems):[];
+    D.extraViews=raw.extraViews||{};
+    D.users=raw.users||{};
+  }else{
+    // First run — seed defaults with hashed passwords
+    const ah=await sha256('112233');
+    const ih=await sha256('');
+    D=JSON.parse(JSON.stringify(DEFAULTS));
+    D.users={admin:{hash:ah},intern:{hash:ih}};
+    await set(ref(DB,'appData'),{
+      menuItems:D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}),
+      extraViews:D.extraViews,
+      users:D.users
+    });
+  }
+}
+
+// ── FIREBASE WRITE ──
+function showSaving(){const p=document.getElementById('savingPill');p.classList.add('show');setTimeout(()=>p.classList.remove('show'),1800);}
+async function fbWrite(path,val){showSaving();await set(ref(DB,path),val);}
+
+// ── AUTH ──
+window.doLogin=async function(){
+  const u=document.getElementById('l-user').value.trim().toLowerCase();
+  const p=document.getElementById('l-pass').value;
+  const rec=D.users[u];
+  if(!rec){showLoginErr();return;}
+  const h=await sha256(p);
+  if(rec.hash!==h){showLoginErr();return;}
+  CU=u;
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('l-pass').value='';
+  document.getElementById('hdrRight').innerHTML='<button class="logout-btn" onclick="doLogout()">'+u+' · Sign Out</button>';
+  renderMainMenu();renderDynViews();
+  if(u==='admin'){renderAdmMenuList();renderAdmExtraList();updateStats();showView('admin');}
+  else showView('main');
+};
+function showLoginErr(){document.getElementById('loginErr').style.display='block';}
+window.doLogout=function(){
+  CU=null;
+  document.getElementById('hdrRight').innerHTML='<span class="hdr-badge">v5 · Firebase</span>';
+  document.getElementById('l-user').value='';
+  showView('login');
+};
+
+// ── NAVIGATION ──
+window.showView=function(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el=document.getElementById('v-'+id);
+  if(el)el.classList.add('active');
+  const map={login:'Welcome Back',main:'Operations Hub',admin:'Admin Panel'};
+  document.getElementById('hTitle').textContent=map[id]||(()=>{
+    const mi=D.menuItems.find(x=>x.viewId===id);
+    if(mi)return mi.title;
+    if(D.extraViews[id])return D.extraViews[id].label||id;
+    return '';
+  })();
+};
+function wireButtons(el){
+  el.querySelectorAll('button[data-view]').forEach(btn=>{
+    const t=btn.getAttribute('data-view');
+    btn.addEventListener('click',()=>window.showView(t));
+  });
+}
+
+// ── RENDER ──
+function renderDynViews(){
+  const c=document.getElementById('dynViews');c.innerHTML='';
+  D.menuItems.forEach(item=>{
+    const d=document.createElement('div');d.id='v-'+item.viewId;d.className='view';
+    d.innerHTML=item.content;wireButtons(d);c.appendChild(d);
+  });
+  Object.keys(D.extraViews).forEach(k=>{
+    const d=document.createElement('div');d.id='v-'+k;d.className='view';
+    d.innerHTML=D.extraViews[k].content;wireButtons(d);c.appendChild(d);
+  });
+}
+function renderMainMenu(){
+  const g=document.getElementById('mainGrid');g.innerHTML='';
+  D.menuItems.forEach(item=>{
+    const b=document.createElement('button');b.className='menu-card';
+    b.innerHTML='<span class="menu-card-icon">'+item.icon+'</span><span class="menu-card-title">'+item.title+'</span>';
+    b.onclick=()=>showView(item.viewId);g.appendChild(b);
+  });
+  if(CU==='admin'){
+    const ab=document.createElement('button');ab.className='menu-card';
+    ab.innerHTML='<span class="menu-card-icon">⚙️</span><span class="menu-card-title">Admin Panel</span>';
+    ab.onclick=()=>showView('admin');g.appendChild(ab);
+  }
+}
+function renderAdmMenuList(){
+  const c=document.getElementById('admMenuList');c.innerHTML='';
+  if(!D.menuItems.length){c.innerHTML='<div class="blk-empty">No menu items yet.</div>';return;}
+  D.menuItems.forEach((item,i)=>{
+    const row=document.createElement('div');row.className='adm-list-item';
+    row.innerHTML='<div class="adm-item-icon">'+item.icon+'</div>'
+      +'<div class="adm-item-info"><div class="adm-item-title">'+item.title+'</div><div class="adm-item-id">'+item.viewId+'</div></div>'
+      +'<div class="adm-item-acts"></div>';
+    const acts=row.querySelector('.adm-item-acts');
+    const eb=document.createElement('button');eb.className='act-btn';eb.textContent='✏';
+    eb.onclick=()=>openItemModal(i);acts.appendChild(eb);
+    const db=document.createElement('button');db.className='act-btn del';db.textContent='✕';
+    db.onclick=()=>confirm2('Delete "'+item.title+'"?','🗑️',async()=>{
+      D.menuItems.splice(i,1);
+      await fbWrite('appData/menuItems',D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}));
+      renderMainMenu();renderDynViews();renderAdmMenuList();updateStats();toast('Deleted');
+    },'Delete');
+    acts.appendChild(db);c.appendChild(row);
+  });
+}
+function renderAdmExtraList(){
+  const c=document.getElementById('admExtraList');c.innerHTML='';
+  const keys=Object.keys(D.extraViews);
+  if(!keys.length){c.innerHTML='<div class="blk-empty">No sub-views yet.</div>';return;}
+  keys.forEach(k=>{
+    const v=D.extraViews[k];
+    const row=document.createElement('div');row.className='adm-list-item';
+    row.innerHTML='<div class="adm-item-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);font-size:11px;font-weight:700;color:#065f46">SV</div>'
+      +'<div class="adm-item-info"><div class="adm-item-title">'+(v.label||k)+'</div><div class="adm-item-id">'+k+'</div></div>'
+      +'<div class="adm-item-acts"></div>';
+    const acts=row.querySelector('.adm-item-acts');
+    const eb=document.createElement('button');eb.className='act-btn';eb.textContent='✏';
+    eb.onclick=()=>openExtraModal(k);acts.appendChild(eb);
+    const db=document.createElement('button');db.className='act-btn del';db.textContent='✕';
+    db.onclick=()=>confirm2('Delete "'+k+'"?','🗑️',async()=>{
+      delete D.extraViews[k];
+      await fbWrite('appData/extraViews',D.extraViews);
+      renderDynViews();renderAdmExtraList();updateStats();toast('Deleted');
+    },'Delete');
+    acts.appendChild(db);c.appendChild(row);
+  });
+}
+function updateStats(){
+  document.getElementById('stMenu').textContent=D.menuItems.length;
+  document.getElementById('stSub').textContent=Object.keys(D.extraViews).length;
+}
+
+// ── ADMIN TABS ──
+window.admTab=function(id,el){
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.adm-sec').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('as-'+id).classList.add('on');
+};
+
+// ── MODALS ──
+window.openModal=id=>document.getElementById(id).classList.add('open');
+window.closeModal=id=>document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+
+window.openItemModal=function(idx){
+  MS.item.blocks=[];MS.item.editIdx=idx!==undefined?idx:null;MS.item.blkEditIdx=null;MS.item._curType=null;
+  document.getElementById('mItemTitle').textContent=idx!==undefined?'Edit Menu Item':'Create Menu Item';
+  document.getElementById('mi-idx').value=idx!==undefined?idx:'';
+  document.getElementById('mi-icon').value=idx!==undefined?D.menuItems[idx].icon:'';
+  document.getElementById('mi-title').value=idx!==undefined?D.menuItems[idx].title:'';
+  document.getElementById('mi-vid').value=idx!==undefined?D.menuItems[idx].viewId:'';
+  const prev=document.getElementById('prevItem'),ed=document.getElementById('blkEditorItem');
+  if(idx!==undefined){prev.innerHTML=D.menuItems[idx].content;wireButtons(prev);ed.innerHTML='<div class="blk-empty" style="color:var(--slate)">Current content shown above. Add blocks below to fully replace it.</div>';}
+  else{prev.innerHTML='';ed.innerHTML='<div class="blk-empty">No blocks yet.</div>';}
+  document.getElementById('bfeItem').innerHTML='';
+  document.querySelectorAll('#btpItem .btp-btn').forEach(b=>b.classList.remove('sel'));
+  openModal('m-item');
+};
+window.openExtraModal=function(key){
+  MS.extra.blocks=[];MS.extra.editKey=key||null;MS.extra.blkEditIdx=null;MS.extra._curType=null;
+  document.getElementById('mExtraTitle').textContent=key?'Edit Sub-View':'Create Sub-View';
+  document.getElementById('ex-key').value=key||'';
+  const vidEl=document.getElementById('ex-vid'),prev=document.getElementById('prevExtra'),ed=document.getElementById('blkEditorExtra');
+  if(key){
+    document.getElementById('ex-lbl').value=D.extraViews[key].label||key;
+    vidEl.value=key;vidEl.readOnly=true;vidEl.style.opacity='.5';
+    prev.innerHTML=D.extraViews[key].content;wireButtons(prev);
+    ed.innerHTML='<div class="blk-empty" style="color:var(--slate)">Current content above. Add blocks to replace it.</div>';
+  }else{
+    document.getElementById('ex-lbl').value='';
+    vidEl.value='';vidEl.readOnly=false;vidEl.style.opacity='1';
+    prev.innerHTML='';ed.innerHTML='<div class="blk-empty">No blocks yet.</div>';
+  }
+  document.getElementById('bfeExtra').innerHTML='';
+  document.querySelectorAll('#btpExtra .btp-btn').forEach(b=>b.classList.remove('sel'));
+  openModal('m-extra');
+};
+
+// ── SAVE ──
+window.saveItem=async function(){
+  const icon=document.getElementById('mi-icon').value.trim();
+  const title=document.getElementById('mi-title').value.trim();
+  const viewId=document.getElementById('mi-vid').value.trim().replace(/\s+/g,'-');
+  const idx=document.getElementById('mi-idx').value;
+  if(!icon||!title||!viewId)return alert('Fill in Icon, Title, and View ID');
+  let c=MS.item.blocks.length?blocks2html(MS.item.blocks):idx!==''?D.menuItems[parseInt(idx)].content:'<h3 class="block-heading">'+title+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
+  const item={icon,title,viewId,content:c};
+  if(idx==='')D.menuItems.push(item);else D.menuItems[parseInt(idx)]=item;
+  MS.item.blocks=[];
+  await fbWrite('appData/menuItems',D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}));
+  closeModal('m-item');renderMainMenu();renderDynViews();renderAdmMenuList();updateStats();
+  toast('☁️ Saved to Firebase!');
+};
+window.saveExtra=async function(){
+  const key=document.getElementById('ex-key').value;
+  const vid=document.getElementById('ex-vid').value.trim().replace(/\s+/g,'-');
+  const lbl=document.getElementById('ex-lbl').value.trim();
+  if(!vid)return alert('Enter a View ID');
+  if(!key&&D.extraViews[vid])return alert('View ID "'+vid+'" already exists.');
+  let c=MS.extra.blocks.length?blocks2html(MS.extra.blocks):key?D.extraViews[key].content:'<h3 class="block-heading">'+(lbl||vid)+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
+  if(key)D.extraViews[key]={label:lbl||key,content:c};
+  else D.extraViews[vid]={label:lbl||vid,content:c};
+  MS.extra.blocks=[];
+  document.getElementById('ex-vid').readOnly=false;document.getElementById('ex-vid').style.opacity='1';
+  await fbWrite('appData/extraViews',D.extraViews);
+  closeModal('m-extra');renderDynViews();renderAdmExtraList();updateStats();
+  toast('☁️ Saved to Firebase!');
+};
+
+// ── PASSWORD ──
+window.updatePw=async function(role,inputId){
+  const pw=document.getElementById(inputId).value;
+  const h=await sha256(pw);
+  if(!D.users)D.users={};
+  if(!D.users[role])D.users[role]={};
+  D.users[role].hash=h;
+  await fbWrite('appData/users',D.users);
+  document.getElementById(inputId).value='';
+  toast('Password updated for '+role);
+};
+
+// ── RESET ──
+window.doReset=function(){
+  confirm2('Reset ALL content to factory defaults?','⚠️',async()=>{
+    const currentUsers=D.users;
+    D=JSON.parse(JSON.stringify(DEFAULTS));
+    D.users=currentUsers;
+    await set(ref(DB,'appData'),{menuItems:D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}),extraViews:D.extraViews,users:D.users});
+    renderMainMenu();renderDynViews();renderAdmMenuList();renderAdmExtraList();updateStats();
+    toast('Content reset to defaults');
+  },'Reset');
+};
+
+// ── BLOCKS ──
+function blocks2html(blocks){
+  const out=[];
+  blocks.forEach(b=>{
+    if(b.type==='heading')out.push('<h3 class="block-heading">'+b.text+'</h3>');
+    else if(b.type==='text')out.push('<p class="block-text">'+b.content+'</p>');
+    else if(b.type==='step')out.push('<div class="instruction-step">'+b.content+'</div>');
+    else if(b.type==='alert')out.push('<div class="senior-alert">'+b.msg+'</div>');
+    else if(b.type==='link')out.push('<a href="'+b.url+'" target="_blank" class="link-card">'+b.label+'</a>');
+    else if(b.type==='button'||b.type==='nav'){
+      const cls=b.type==='nav'?(b.style==='primary'?'btn btn-p':'btn btn-g'):(b.style==='red'?'btn btn-r':b.style==='ghost'?'btn btn-g':'btn btn-p');
+      const dv=b.target?' data-view="'+b.target+'"':'';
+      out.push('<button class="'+cls+'"'+dv+'>'+b.label+'</button>');
+    }
+    else if(b.type==='contact'){
+      const cols=(b.contacts||[]).map(c=>{
+        const src='https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)+'&background=4f46e5&color=fff';
+        const inner='<img src="'+src+'" alt="'+c.name+'">'+c.name;
+        return c.url?'<a href="'+c.url+'" target="_blank" class="senior-box">'+inner+'</a>':'<div class="senior-box">'+inner+'</div>';
+      }).join('');
+      out.push('<div class="senior-grid">'+cols+'</div>');
+    }
+    else if(b.type==='code')out.push('<div class="block-code">'+b.content+'</div>');
+  });
+  return out.join('');
+}
+function blkPrev(b){
+  const e=s=>s?(s+'').replace(/</g,'&lt;').substring(0,40):'';
+  if(b.type==='heading')return e(b.text);
+  if(['text','step','code'].includes(b.type))return e(b.content);
+  if(b.type==='alert')return e(b.msg);
+  if(b.type==='link')return e(b.label)+' → '+e(b.url);
+  if(b.type==='button'||b.type==='nav')return '['+b.style+'] '+e(b.label)+(b.target?' → '+b.target:'');
+  if(b.type==='contact')return(b.contacts||[]).map(c=>c.name).join(', ');
+  return'';
+}
+function updatePreview(editor){
+  const id=editor==='extra'?'prevExtra':'prevItem';
+  const html=blocks2html(MS[editor].blocks);
+  const pane=document.getElementById(id);
+  pane.innerHTML=html||'<div style="color:var(--muted);font-size:.82rem">Preview appears here…</div>';
+  wireButtons(pane);
+}
+function renderBlkList(editor){
+  const edEl=document.getElementById(editor==='extra'?'blkEditorExtra':'blkEditorItem');
+  edEl.innerHTML='';
+  const blocks=MS[editor].blocks;
+  if(!blocks.length){edEl.innerHTML='<div class="blk-empty">No blocks yet.</div>';return;}
+  blocks.forEach((b,i)=>{
+    const d=document.createElement('div');d.className='blk-item';
+    d.innerHTML='<span class="blk-badge">'+b.type+'</span><span class="blk-prev">'+blkPrev(b)+'</span>';
+    const acts=document.createElement('div');acts.className='blk-acts';
+    const mk=(cls,icon,fn)=>{const btn=document.createElement('button');btn.className='bact '+cls;btn.textContent=icon;btn.onclick=fn;acts.appendChild(btn);};
+    (function(idx,ed){
+      mk('',  '↑',()=>{if(idx>0){const bl=MS[ed].blocks;[bl[idx],bl[idx-1]]=[bl[idx-1],bl[idx]];renderBlkList(ed);updatePreview(ed);}});
+      mk('',  '↓',()=>{const bl=MS[ed].blocks;if(idx<bl.length-1){[bl[idx],bl[idx+1]]=[bl[idx+1],bl[idx]];renderBlkList(ed);updatePreview(ed);}});
+      mk('',  '✏',()=>openBlkEdit(idx,ed));
+      mk('bad','✕',()=>{MS[ed].blocks.splice(idx,1);renderBlkList(ed);updatePreview(ed);});
+    })(i,editor);
+    d.appendChild(acts);edEl.appendChild(d);
+  });
+}
+function buildBtpGrids(){
+  ['Item','Extra'].forEach(cap=>{
+    const ed=cap==='Item'?'item':'extra';
+    const g=document.getElementById('btp'+cap);g.innerHTML='';
+    BT.forEach(bt=>{
+      const b=document.createElement('button');b.type='button';b.className='btp-btn';
+      b.innerHTML='<span class="ico">'+bt.ico+'</span><span class="lbl">'+bt.lbl+'</span>';
+      b.onclick=()=>{g.querySelectorAll('.btp-btn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');renderBfe(bt.id,ed);};
+      g.appendChild(b);
+    });
+  });
+}
+function fld(lbl,id,type,ph,mono){
+  const ta=type==='textarea';
+  const inp=ta?`<textarea id="${id}" placeholder="${ph||''}"${mono?' style="font-family:\'DM Mono\',monospace"':''}></textarea>`:`<input type="${type}" id="${id}" placeholder="${ph||''}"${mono?' style="font-family:\'DM Mono\',monospace"':''}>`;
+  return`<label style="font-size:.7rem;font-weight:600;color:var(--slate);display:block;margin-bottom:3px">${lbl}</label>${inp}`;
+}
+function sfld(lbl,id,opts){
+  return`<label style="font-size:.7rem;font-weight:600;color:var(--slate);display:block;margin-bottom:3px">${lbl}</label><select id="${id}">${opts.map(o=>`<option value="${o.split(':')[0]}">${o.split(':')[1]}</option>`).join('')}</select>`;
+}
+function renderBfe(type,editor){
+  const uid=editor==='extra'?'ex':'it';
+  const area=document.getElementById(editor==='extra'?'bfeExtra':'bfeItem');area.innerHTML='';
+  const wrap=document.createElement('div');wrap.className='bfe';
+  let html=`<div class="bfe-title">${BFTITLES[type]}</div>`;
+  if(type==='heading')html+=fld('Heading Text',`${uid}-h`,'text','e.g. Step 1: Contact Senior');
+  else if(type==='text')html+=fld('Content',`${uid}-t`,'textarea','Enter paragraph text...');
+  else if(type==='step')html+=fld('Step Content',`${uid}-s`,'textarea','e.g. Write User ID...');
+  else if(type==='alert')html+=fld('Alert Message',`${uid}-a`,'text','e.g. ⚠️ REQUIRES SENIOR PERMISSION');
+  else if(type==='link')html+=fld('Label',`${uid}-ll`,'text','e.g. Open Maxis Hub')+fld('URL',`${uid}-lu`,'url','https://...');
+  else if(type==='button')html+=fld('Label',`${uid}-bl`,'text','e.g. Next Step →')+fld('Target View ID',`${uid}-bt`,'text','e.g. hw-2')+sfld('Style',`${uid}-bs`,['primary:Primary (Purple)','ghost:Ghost (Outline)','red:Red (Danger)']);
+  else if(type==='contact')html+=`<div id="${uid}-rows"></div><button type="button" class="btn btn-g btn-sm" style="width:auto" onclick="addCntRow('${uid}-rows')">+ Add Contact</button>`;
+  else if(type==='code')html+=fld('Code / Command',`${uid}-c`,'textarea','e.g. gpupdate /force',true);
+  else if(type==='nav')html+=fld('Label',`${uid}-nl`,'text','e.g. ← Back')+fld('Target View ID',`${uid}-nt`,'text','e.g. main')+sfld('Style',`${uid}-ns`,['ghost:Ghost (Outline)','primary:Primary (Purple)']);
+  wrap.innerHTML=html;area.appendChild(wrap);
+  if(type==='contact')addCntRow(`${uid}-rows`);
+  MS[editor]._curType=type;MS[editor]._curUid=uid;
+}
+window.addCntRow=function(rowsId){
+  const ctr=document.getElementById(rowsId);if(!ctr)return;
+  const row=document.createElement('div');row.className='cnt-row';
+  row.innerHTML='<input type="text" class="cnt-name" placeholder="Name"><input type="url" class="cnt-url" placeholder="Chat URL (optional)"><button type="button" class="cnt-del" onclick="this.parentElement.remove()">✕</button>';
+  ctr.appendChild(row);
+};
+function gv(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function commitBlock(type,editor,uid){
+  let block=null;
+  if(type==='heading'){const t=gv(`${uid}-h`);if(!t)return alert('Enter heading text');block={type,text:t};}
+  else if(type==='text'){const c=gv(`${uid}-t`);if(!c)return alert('Enter text');block={type,content:c};}
+  else if(type==='step'){const c=gv(`${uid}-s`);if(!c)return alert('Enter step content');block={type,content:c};}
+  else if(type==='alert'){const m=gv(`${uid}-a`);if(!m)return alert('Enter alert message');block={type,msg:m};}
+  else if(type==='link'){const l=gv(`${uid}-ll`),u=gv(`${uid}-lu`);if(!l||!u)return alert('Fill label and URL');block={type,label:l,url:u};}
+  else if(type==='button'){const l=gv(`${uid}-bl`),t=gv(`${uid}-bt`),s=gv(`${uid}-bs`);if(!l)return alert('Enter label');block={type,label:l,target:t,style:s};}
+  else if(type==='contact'){
+    const ctr=document.getElementById(`${uid}-rows`);if(!ctr)return;
+    const contacts=[...ctr.querySelectorAll('.cnt-name')].map((n,i)=>({name:n.value.trim(),url:ctr.querySelectorAll('.cnt-url')[i]?.value.trim()||''})).filter(c=>c.name);
+    if(!contacts.length)return alert('Add at least one contact');
+    block={type,contacts};
+  }
+  else if(type==='code'){const c=gv(`${uid}-c`);if(!c)return alert('Enter code');block={type,content:c};}
+  else if(type==='nav'){const l=gv(`${uid}-nl`),t=gv(`${uid}-nt`),s=gv(`${uid}-ns`);if(!l)return alert('Enter label');block={type,label:l,target:t,style:s};}
+  if(!block)return;
+  MS[editor].blocks.push(block);
+  renderBlkList(editor);updatePreview(editor);
+  document.getElementById(editor==='extra'?'bfeExtra':'bfeItem').innerHTML='';
+  document.querySelectorAll('#'+(editor==='extra'?'btpExtra':'btpItem')+' .btp-btn').forEach(b=>b.classList.remove('sel'));
+  MS[editor]._curType=null;MS[editor]._curUid=null;
+  toast('Block added ✓');
+}
+window.addBlock=function(editor){
+  const type=MS[editor]._curType,uid=MS[editor]._curUid;
+  if(!type)return alert('Select a block type first');
+  commitBlock(type,editor,uid);
+};
+function openBlkEdit(i,editor){
+  MS[editor].blkEditIdx=i;
+  const b=MS[editor].blocks[i];
+  const form=document.getElementById('blkEditForm');form.innerHTML='';
+  let html='';
+  if(b.type==='heading')html=fld('Heading Text','ed-h','text');
+  else if(b.type==='text')html=fld('Content','ed-t','textarea');
+  else if(b.type==='step')html=fld('Step Content','ed-s','textarea');
+  else if(b.type==='alert')html=fld('Alert Message','ed-a','text');
+  else if(b.type==='link')html=fld('Label','ed-ll','text')+fld('URL','ed-lu','url');
+  else if(b.type==='button')html=fld('Label','ed-bl','text')+fld('Target View ID','ed-bt','text')+sfld('Style','ed-bs',['primary:Primary','ghost:Ghost','red:Red']);
+  else if(b.type==='nav')html=fld('Label','ed-nl','text')+fld('Target View ID','ed-nt','text')+sfld('Style','ed-ns',['ghost:Ghost','primary:Primary']);
+  else if(b.type==='code')html=fld('Code','ed-c','textarea');
+  form.innerHTML=html;form.dataset.editor=editor;
+  const sv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  if(b.type==='heading')sv('ed-h',b.text);
+  else if(['text','step','code'].includes(b.type))sv('ed-'+(b.type==='text'?'t':b.type==='step'?'s':'c'),b.content);
+  else if(b.type==='alert')sv('ed-a',b.msg);
+  else if(b.type==='link'){sv('ed-ll',b.label);sv('ed-lu',b.url);}
+  else if(b.type==='button'){sv('ed-bl',b.label);sv('ed-bt',b.target);sv('ed-bs',b.style);}
+  else if(b.type==='nav'){sv('ed-nl',b.label);sv('ed-nt',b.target);sv('ed-ns',b.style);}
+  openModal('m-block');
+}
+window.saveBlkEdit=function(){
+  const editor=document.getElementById('blkEditForm').dataset.editor;
+  const i=MS[editor].blkEditIdx;
+  const b=MS[editor].blocks[i];
+  if(b.type==='heading')b.text=gv('ed-h');
+  else if(b.type==='text')b.content=gv('ed-t');
+  else if(b.type==='step')b.content=gv('ed-s');
+  else if(b.type==='alert')b.msg=gv('ed-a');
+  else if(b.type==='link'){b.label=gv('ed-ll');b.url=gv('ed-lu');}
+  else if(b.type==='button'){b.label=gv('ed-bl');b.target=gv('ed-bt');b.style=gv('ed-bs');}
+  else if(b.type==='nav'){b.label=gv('ed-nl');b.target=gv('ed-nt');b.style=gv('ed-ns');}
+  else if(b.type==='code')b.content=gv('ed-c');
+  closeModal('m-block');renderBlkList(editor);updatePreview(editor);toast('Block updated ✓');
+};
+function confirm2(msg,icon,onOk,okLabel){
+  document.getElementById('cIcon').textContent=icon||'⚠️';
+  document.getElementById('cTitle').textContent=msg;
+  const ok=document.getElementById('cOk');ok.textContent=okLabel||'Confirm';
+  ok.onclick=()=>{closeModal('m-confirm');onOk();};
+  openModal('m-confirm');
+}
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+document.getElementById('addBlkItem').onclick=()=>window.addBlock('item');
+document.getElementById('addBlkExtra').onclick=()=>window.addBlock('extra');
+document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+initFirebase();
+</script>
+</body>
+</html>
