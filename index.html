@@ -53,6 +53,12 @@ body{font-family:'DM Sans',sans-serif;background:#0d1117;min-height:100vh;displa
 .senior-box:hover{border-color:var(--purple);}
 .senior-box img{width:36px;height:36px;border-radius:50%;}
 .block-code{background:#0f172a;color:#e2e8f0;font-family:'DM Mono',monospace;font-size:.82rem;padding:12px 14px;border-radius:9px;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;}
+.block-image{width:100%;border-radius:10px;margin-bottom:4px;object-fit:cover;display:block;}.block-caption{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:10px;font-style:italic;}
+.img-upload-box{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);}
+.img-upload-box:hover{border-color:var(--purple);background:#faf5ff;}
+.img-upload-box input[type=file]{display:none;}
+.img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;display:none;}
+.img-uploading{color:var(--purple);font-size:.8rem;margin-top:6px;display:none;}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:none;border-radius:9px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;margin-right:4px;transition:all .15s;width:100%;}
 .btn-p{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;box-shadow:0 4px 12px rgba(109,40,217,.25);}
 .btn-p:hover{box-shadow:0 6px 18px rgba(109,40,217,.35);}
@@ -236,11 +242,7 @@ body{font-family:'DM Sans',sans-serif;background:#0d1117;min-height:100vh;displa
           <div class="field" style="margin-bottom:8px"><label>New Password</label><input id="sec-ip" type="password" placeholder="Leave blank = no password required"></div>
           <button class="btn btn-p btn-sm" onclick="updatePw('intern','sec-ip')">Update Intern Password</button>
         </div>
-        <div class="sec-box danger">
-          <div class="sec-box-title">⚠️ Danger Zone</div>
-          <div style="font-size:.75rem;color:var(--slate);margin-bottom:10px">Reset ALL menu items and sub-views to factory defaults. Passwords are kept.</div>
-          <button class="btn btn-r btn-sm" onclick="doReset()">Reset All Content</button>
-        </div>
+
       </div>
     </div>
   </div>
@@ -358,8 +360,9 @@ const BT=[
   {id:'contact',ico:'👤',lbl:'Contact'},
   {id:'code',ico:'</>',lbl:'Code'},
   {id:'nav',ico:'←→',lbl:'Nav'},
+  {id:'image',ico:'🖼',lbl:'Image'},
 ];
-const BFTITLES={heading:'Heading Block',text:'Text Block',step:'Step Block',alert:'Alert Block',link:'Link Block',button:'Button Block',contact:'Contact Block',code:'Code Block',nav:'Navigation Button'};
+const BFTITLES={heading:'Heading Block',text:'Text Block',step:'Step Block',alert:'Alert Block',link:'Link Block',button:'Button Block',contact:'Contact Block',code:'Code Block',nav:'Navigation Button',image:'Image Block'};
 
 // ── DEFAULT DATA ──
 const DEFAULTS={
@@ -400,7 +403,7 @@ async function initFirebase(){
   try{
     const app=initializeApp({apiKey:cfg.key,authDomain:cfg.pid+'.firebaseapp.com',databaseURL:cfg.url,projectId:cfg.pid,storageBucket:cfg.pid+'.appspot.com'});
     DB=getDatabase(app);
-    await loadData();
+        await loadData();
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('appShell').style.display='block';
     showView('login');
@@ -595,17 +598,31 @@ window.closeModal=id=>document.getElementById(id).classList.remove('open');
 document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 
 window.openItemModal=function(idx){
-  MS.item.blocks=[];MS.item.editIdx=idx!==undefined?idx:null;MS.item.blkEditIdx=null;MS.item._curType=null;
-  document.getElementById('mItemTitle').textContent=idx!==undefined?'Edit Menu Item':'Create Menu Item';
-  document.getElementById('mi-idx').value=idx!==undefined?idx:'';
-  document.getElementById('mi-icon').value=idx!==undefined?D.menuItems[idx].icon:'';
-  document.getElementById('mi-title').value=idx!==undefined?D.menuItems[idx].title:'';
-  document.getElementById('mi-vid').value=idx!==undefined?D.menuItems[idx].viewId:'';
-  const prev=document.getElementById('prevItem'),ed=document.getElementById('blkEditorItem');
-  if(idx!==undefined){prev.innerHTML=D.menuItems[idx].content;wireButtons(prev);ed.innerHTML='<div class="blk-empty" style="color:var(--slate)">Current content shown above. Add blocks below to fully replace it.</div>';}
-  else{prev.innerHTML='';ed.innerHTML='<div class="blk-empty">No blocks yet.</div>';}
+  MS.item.editIdx=idx!==undefined?idx:null;MS.item.blkEditIdx=null;MS.item._curType=null;
+  const isEdit=idx!==undefined;
+  document.getElementById('mItemTitle').textContent=isEdit?'Edit Menu Item':'Create Menu Item';
+  document.getElementById('mi-idx').value=isEdit?idx:'';
+  document.getElementById('mi-icon').value=isEdit?D.menuItems[idx].icon:'';
+  document.getElementById('mi-title').value=isEdit?D.menuItems[idx].title:'';
+  document.getElementById('mi-vid').value=isEdit?D.menuItems[idx].viewId:'';
+  document.getElementById('mi-vid').readOnly=isEdit;
+  document.getElementById('mi-vid').style.opacity=isEdit?'.5':'1';
+  // Load existing blocks so they can be edited
+  const existingBlocks=isEdit?(D.menuItems[idx].blocks||[]):[];
+  MS.item.blocks=JSON.parse(JSON.stringify(existingBlocks));
   document.getElementById('bfeItem').innerHTML='';
   document.querySelectorAll('#btpItem .btp-btn').forEach(b=>b.classList.remove('sel'));
+  if(isEdit&&existingBlocks.length){
+    renderBlkList('item');updatePreview('item');
+  }else if(isEdit&&!existingBlocks.length){
+    // Legacy content — show preview only, no blocks
+    const prev=document.getElementById('prevItem');
+    prev.innerHTML=D.menuItems[idx].content;wireButtons(prev);
+    document.getElementById('blkEditorItem').innerHTML='<div class="blk-empty" style="color:var(--slate);font-size:.78rem">ℹ️ This item has legacy content. Add new blocks above to replace it.</div>';
+  }else{
+    document.getElementById('prevItem').innerHTML='';
+    document.getElementById('blkEditorItem').innerHTML='<div class="blk-empty">No blocks yet. Select a type above.</div>';
+  }
   openModal('m-item');
 };
 window.openExtraModal=function(key){
@@ -616,8 +633,11 @@ window.openExtraModal=function(key){
   if(key){
     document.getElementById('ex-lbl').value=D.extraViews[key].label||key;
     vidEl.value=key;vidEl.readOnly=true;vidEl.style.opacity='.5';
+    const existingExtraBlocks=D.extraViews[key].blocks||[];
+    MS.extra.blocks=JSON.parse(JSON.stringify(existingExtraBlocks));
     prev.innerHTML=D.extraViews[key].content;wireButtons(prev);
-    ed.innerHTML='<div class="blk-empty" style="color:var(--slate)">Current content above. Add blocks to replace it.</div>';
+    if(existingExtraBlocks.length){renderBlkList('extra');updatePreview('extra');}
+    else{ed.innerHTML='<div class="blk-empty" style="color:var(--slate)">No blocks saved — add blocks below to build this page.</div>';}
   }else{
     document.getElementById('ex-lbl').value='';
     vidEl.value='';vidEl.readOnly=false;vidEl.style.opacity='1';
@@ -632,12 +652,14 @@ window.openExtraModal=function(key){
 window.saveItem=async function(){
   const icon=document.getElementById('mi-icon').value.trim();
   const title=document.getElementById('mi-title').value.trim();
-  const viewId=document.getElementById('mi-vid').value.trim().replace(/\s+/g,'-');
   const idx=document.getElementById('mi-idx').value;
+  const isEdit=idx!=='';
+  const viewId=isEdit?D.menuItems[parseInt(idx)].viewId:document.getElementById('mi-vid').value.trim().replace(/\s+/g,'-');
   if(!icon||!title||!viewId)return alert('Fill in Icon, Title, and View ID');
-  let c=MS.item.blocks.length?blocks2html(MS.item.blocks):idx!==''?D.menuItems[parseInt(idx)].content:'<h3 class="block-heading">'+title+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
-  const item={icon,title,viewId,content:c};
-  if(idx==='')D.menuItems.push(item);else D.menuItems[parseInt(idx)]=item;
+  const blocksToSave=MS.item.blocks.length?MS.item.blocks:(isEdit&&D.menuItems[parseInt(idx)].blocks?D.menuItems[parseInt(idx)].blocks:[]);
+  const c=blocksToSave.length?blocks2html(blocksToSave):isEdit?D.menuItems[parseInt(idx)].content:'<h3 class="block-heading">'+title+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
+  const item={icon,title,viewId,content:c,blocks:blocksToSave};
+  if(!isEdit)D.menuItems.push(item);else D.menuItems[parseInt(idx)]=item;
   MS.item.blocks=[];
   await fbWrite('appData/menuItems',D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}));
   closeModal('m-item');renderMainMenu();renderDynViews();renderAdmMenuList();updateStats();
@@ -645,20 +667,20 @@ window.saveItem=async function(){
 };
 window.saveExtra=async function(){
   const key=document.getElementById('ex-key').value;
-  const vid=document.getElementById('ex-vid').value.trim().replace(/\s+/g,'-');
+  const isEdit=!!key;
+  const vid=isEdit?key:document.getElementById('ex-vid').value.trim().replace(/\s+/g,'-');
   const lbl=document.getElementById('ex-lbl').value.trim();
   if(!vid)return alert('Enter a View ID');
-  if(!key&&D.extraViews[vid])return alert('View ID "'+vid+'" already exists.');
-  let c=MS.extra.blocks.length?blocks2html(MS.extra.blocks):key?D.extraViews[key].content:'<h3 class="block-heading">'+(lbl||vid)+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
-  if(key)D.extraViews[key]={label:lbl||key,content:c};
-  else D.extraViews[vid]={label:lbl||vid,content:c};
+  if(!isEdit&&D.extraViews[vid])return alert('View ID "'+vid+'" already exists.');
+  const blocksToSave=MS.extra.blocks.length?MS.extra.blocks:(isEdit&&D.extraViews[key].blocks?D.extraViews[key].blocks:[]);
+  const c=blocksToSave.length?blocks2html(blocksToSave):isEdit?D.extraViews[key].content:'<h3 class="block-heading">'+(lbl||vid)+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
+  D.extraViews[vid]={label:lbl||vid,content:c,blocks:blocksToSave};
   MS.extra.blocks=[];
   document.getElementById('ex-vid').readOnly=false;document.getElementById('ex-vid').style.opacity='1';
   await fbWrite('appData/extraViews',D.extraViews);
   closeModal('m-extra');renderDynViews();renderAdmExtraList();updateStats();
   toast('☁️ Saved to Firebase!');
 };
-
 // ── PASSWORD ──
 window.updatePw=async function(role,inputId){
   const pw=document.getElementById(inputId).value;
@@ -672,16 +694,7 @@ window.updatePw=async function(role,inputId){
 };
 
 // ── RESET ──
-window.doReset=function(){
-  confirm2('Reset ALL content to factory defaults?','⚠️',async()=>{
-    const currentUsers=D.users;
-    D=JSON.parse(JSON.stringify(DEFAULTS));
-    D.users=currentUsers;
-    await set(ref(DB,'appData'),{menuItems:D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}),extraViews:D.extraViews,users:D.users});
-    renderMainMenu();renderDynViews();renderAdmMenuList();renderAdmExtraList();updateStats();
-    toast('Content reset to defaults');
-  },'Reset');
-};
+// reset removed
 
 // ── BLOCKS ──
 function blocks2html(blocks){
@@ -706,6 +719,10 @@ function blocks2html(blocks){
       out.push('<div class="senior-grid">'+cols+'</div>');
     }
     else if(b.type==='code')out.push('<div class="block-code">'+b.content+'</div>');
+    else if(b.type==='image'){
+      out.push('<img src="'+b.url+'" class="block-image" alt="'+(b.caption||'image')+'" loading="lazy">');
+      if(b.caption)out.push('<div class="block-caption">'+b.caption+'</div>');
+    }
   });
   return out.join('');
 }
@@ -717,6 +734,7 @@ function blkPrev(b){
   if(b.type==='link')return e(b.label)+' → '+e(b.url);
   if(b.type==='button'||b.type==='nav')return '['+b.style+'] '+e(b.label)+(b.target?' → '+b.target:'');
   if(b.type==='contact')return(b.contacts||[]).map(c=>c.name).join(', ');
+  if(b.type==='image')return b.url?'🖼 '+b.url.substring(0,40)+'…':'🖼 Image';
   return'';
 }
 function updatePreview(editor){
@@ -779,6 +797,7 @@ function renderBfe(type,editor){
   else if(type==='contact')html+=`<div id="${uid}-rows"></div><button type="button" class="btn btn-g btn-sm" style="width:auto" onclick="addCntRow('${uid}-rows')">+ Add Contact</button>`;
   else if(type==='code')html+=fld('Code / Command',`${uid}-c`,'textarea','e.g. gpupdate /force',true);
   else if(type==='nav')html+=fld('Label',`${uid}-nl`,'text','e.g. ← Back')+fld('Target View ID',`${uid}-nt`,'text','e.g. main')+sfld('Style',`${uid}-ns`,['ghost:Ghost (Outline)','primary:Primary (Purple)']);
+  else if(type==='image')html+=`<div class="img-upload-box" onclick="document.getElementById('${uid}-imgfile').click()"><input type="file" id="${uid}-imgfile" accept="image/*" onchange="previewImg('${uid}')"><span id="${uid}-imgicon" style="font-size:28px">🖼️</span><div style="font-size:.8rem;color:var(--muted);margin-top:4px">Tap to choose image (max ~2MB)</div><img id="${uid}-imgprev" class="img-preview" style="display:none"><div id="${uid}-imgstatus" style="display:none;font-size:.78rem;color:var(--purple);margin-top:4px;font-weight:600"></div></div><div style="font-size:.72rem;color:var(--muted);margin-top:6px;margin-bottom:4px">Or paste image URL directly:</div>` + fld('Image URL (optional)',`${uid}-imgurl`,'url','https://... or leave blank to upload file') + fld('Caption (optional)',`${uid}-imgcap`,'text','e.g. Server rack diagram');
   wrap.innerHTML=html;area.appendChild(wrap);
   if(type==='contact')addCntRow(`${uid}-rows`);
   MS[editor]._curType=type;MS[editor]._curUid=uid;
@@ -790,7 +809,7 @@ window.addCntRow=function(rowsId){
   ctr.appendChild(row);
 };
 function gv(id){const e=document.getElementById(id);return e?e.value.trim():'';}
-function commitBlock(type,editor,uid){
+async function commitBlock(type,editor,uid){
   let block=null;
   if(type==='heading'){const t=gv(`${uid}-h`);if(!t)return alert('Enter heading text');block={type,text:t};}
   else if(type==='text'){const c=gv(`${uid}-t`);if(!c)return alert('Enter text');block={type,content:c};}
@@ -806,6 +825,38 @@ function commitBlock(type,editor,uid){
   }
   else if(type==='code'){const c=gv(`${uid}-c`);if(!c)return alert('Enter code');block={type,content:c};}
   else if(type==='nav'){const l=gv(`${uid}-nl`),t=gv(`${uid}-nt`),s=gv(`${uid}-ns`);if(!l)return alert('Enter label');block={type,label:l,target:t,style:s};}
+  else if(type==='image'){
+    const urlVal=gv(`${uid}-imgurl`);
+    const fileEl=document.getElementById(`${uid}-imgfile`);
+    const file=fileEl&&fileEl.files&&fileEl.files[0];
+    const captionVal=gv(`${uid}-imgcap`)||'';
+    if(!urlVal&&!file)return alert('Choose an image file or paste an image URL');
+    const status=document.getElementById(`${uid}-imgstatus`);
+    if(urlVal){block={type,url:urlVal,caption:captionVal};}
+    else{
+      if(status){status.style.display='block';status.textContent='⏳ Processing...';}
+      try{
+        await new Promise((resolve,reject)=>{
+          const r=new FileReader();
+          r.onload=e=>{
+            const b64=e.target.result;
+            if(b64.length>4*1024*1024){
+              reject(new Error('Image too large. Please resize to under 2MB, or paste a URL instead.'));
+            }else{
+              block={type,url:b64,caption:captionVal};
+              resolve();
+            }
+          };
+          r.onerror=()=>reject(new Error('Failed to read file'));
+          r.readAsDataURL(file);
+        });
+        if(status)status.style.display='none';
+      }catch(e){
+        if(status)status.style.display='none';
+        return alert(e.message);
+      }
+    }
+  }
   if(!block)return;
   MS[editor].blocks.push(block);
   renderBlkList(editor);updatePreview(editor);
@@ -814,10 +865,19 @@ function commitBlock(type,editor,uid){
   MS[editor]._curType=null;MS[editor]._curUid=null;
   toast('Block added ✓');
 }
-window.addBlock=function(editor){
+window.previewImg=function(uid){
+  const file=document.getElementById(uid+'-imgfile').files[0];
+  if(!file)return;
+  const prev=document.getElementById(uid+'-imgprev');
+  const icon=document.getElementById(uid+'-imgicon');
+  const r=new FileReader();
+  r.onload=e=>{prev.src=e.target.result;prev.style.display='block';if(icon)icon.style.display='none';};
+  r.readAsDataURL(file);
+};
+window.addBlock=async function(editor){
   const type=MS[editor]._curType,uid=MS[editor]._curUid;
   if(!type)return alert('Select a block type first');
-  commitBlock(type,editor,uid);
+  await commitBlock(type,editor,uid);
 };
 function openBlkEdit(i,editor){
   MS[editor].blkEditIdx=i;
@@ -840,9 +900,20 @@ function openBlkEdit(i,editor){
   else if(b.type==='link'){sv('ed-ll',b.label);sv('ed-lu',b.url);}
   else if(b.type==='button'){sv('ed-bl',b.label);sv('ed-bt',b.target);sv('ed-bs',b.style);}
   else if(b.type==='nav'){sv('ed-nl',b.label);sv('ed-nt',b.target);sv('ed-ns',b.style);}
+  else if(b.type==='image'){
+    // For image edit, show current image and caption field
+    form.innerHTML=`<div style="margin-bottom:10px">
+      <label style="font-size:.7rem;font-weight:600;color:var(--slate);display:block;margin-bottom:4px">CURRENT IMAGE</label>
+      <img src="${b.url}" style="width:100%;border-radius:8px;margin-bottom:8px;object-fit:cover;max-height:160px">
+    </div>` + fld('Caption','ed-imgcap','text') + `<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Replace image (optional):</div><div class="img-upload-box" onclick="document.getElementById('ed-imgfile').click()"><input type="file" id="ed-imgfile" accept="image/*" onchange="(function(){const f=document.getElementById('ed-imgfile').files[0];if(!f)return;const r=new FileReader();r.onload=e=>{document.querySelector('#blkEditForm img').src=e.target.result;};r.readAsDataURL(f);})()"><span style="font-size:.8rem;color:var(--muted)">Tap to replace image</span></div>`;
+    form.dataset.editor=editor;
+    sv('ed-imgcap',b.caption||'');
+    openModal('m-block');
+    return;
+  }
   openModal('m-block');
 }
-window.saveBlkEdit=function(){
+window.saveBlkEdit=async function(){
   const editor=document.getElementById('blkEditForm').dataset.editor;
   const i=MS[editor].blkEditIdx;
   const b=MS[editor].blocks[i];
@@ -854,6 +925,21 @@ window.saveBlkEdit=function(){
   else if(b.type==='button'){b.label=gv('ed-bl');b.target=gv('ed-bt');b.style=gv('ed-bs');}
   else if(b.type==='nav'){b.label=gv('ed-nl');b.target=gv('ed-nt');b.style=gv('ed-ns');}
   else if(b.type==='code')b.content=gv('ed-c');
+  else if(b.type==='image'){
+    b.caption=gv('ed-imgcap');
+    const fileEl=document.getElementById('ed-imgfile');
+    if(fileEl&&fileEl.files&&fileEl.files[0]){
+      await new Promise((resolve,reject)=>{
+        const r=new FileReader();
+        r.onload=e=>{
+          if(e.target.result.length>4*1024*1024){reject(new Error('Image too large (max ~2MB)'));}
+          else{b.url=e.target.result;resolve();}
+        };
+        r.onerror=()=>reject(new Error('Read failed'));
+        r.readAsDataURL(fileEl.files[0]);
+      }).catch(err=>{alert(err.message);});
+    }
+  }
   closeModal('m-block');renderBlkList(editor);updatePreview(editor);toast('Block updated ✓');
 };
 function confirm2(msg,icon,onOk,okLabel){
