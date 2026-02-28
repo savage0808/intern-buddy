@@ -2,152 +2,321 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Intern Buddy Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intern Buddy Pro — Roche Malaysia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0f172a;--ink2:#1e293b;--ink3:#334155;--slate:#475569;--muted:#94a3b8;--border:#e2e8f0;--surface:#f8fafc;--white:#ffffff;--purple:#6d28d9;--purple2:#7c3aed;--green:#059669;--red:#dc2626;--shlg:0 20px 60px rgba(0,0,0,.18),0 4px 16px rgba(0,0,0,.1);--r:12px;}
+/* ── VARIABLES ── */
+:root {
+  --blue:#005faa; --blue2:#003d7a; --blue-lt:#e8f2fb; --blue-mid:#b8d8f0;
+  --ink:#0f172a; --ink2:#1e293b; --ink3:#334155;
+  --slate:#475569; --muted:#94a3b8; --border:#e2e8f0; --border2:#f1f5f9;
+  --surface:#f8fafc; --surface2:#f1f5f9; --white:#ffffff;
+  --green:#059669; --red:#dc2626; --amber:#d97706;
+  /* keep purple vars so JS block styles work */
+  --purple:var(--blue); --purple2:var(--blue2);
+  --shlg: 0 1px 3px rgba(0,0,0,.07), 0 8px 24px rgba(0,0,0,.08);
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:#0d1117;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:12px;}
-.shell{width:100%;max-width:480px;}
-.card{background:var(--white);border-radius:22px;box-shadow:var(--shlg);display:flex;flex-direction:column;max-height:calc(100vh - 24px);overflow:hidden;}
-.hdr{background:var(--ink);padding:14px 16px 12px;flex-shrink:0;position:relative;overflow:hidden;}
-.hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(109,40,217,.35) 0%,transparent 70%);pointer-events:none;}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;}
-.hdr-logo{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);}
-.logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:.72rem;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;}
-.logout-btn:hover{background:rgba(255,255,255,.18);}
-.hdr-badge{background:rgba(109,40,217,.3);color:#c4b5fd;font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:5px;border:1px solid rgba(109,40,217,.4);}
-.hdr-body{margin-top:10px;}
-.hdr-title{font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:-.01em;}
-.hdr-sub{font-size:.78rem;color:rgba(255,255,255,.5);margin-top:2px;}
-.conn-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;margin-right:5px;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.view{display:none;padding:16px;overflow-y:auto;max-height:calc(100vh - 24px - 88px);}
-.view.active{display:block;animation:fi .2s ease;}
-@keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
-#v-login{padding:28px 24px;}
-.login-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--purple),var(--purple2));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;}
-.login-title{font-size:1.4rem;font-weight:700;color:var(--ink);text-align:center;}
-.login-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-top:4px;margin-bottom:22px;}
-.field{margin-bottom:14px;}
-.field label{display:block;font-size:.72rem;font-weight:600;color:var(--ink3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
-.field input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:.9rem;font-family:inherit;color:var(--ink);outline:none;transition:border .15s;}
-.field input:focus{border-color:var(--purple);}
-.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit;}
-.login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:8px;display:none;}
-.section-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.menu-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
-.menu-card:hover{border-color:var(--purple);background:#faf5ff;transform:translateY(-1px);}
-.menu-card-icon{font-size:22px;margin-bottom:8px;display:block;}
-.menu-card-title{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.3;}
-.block-heading{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:10px;line-height:1.3;}
-.block-text{font-size:.85rem;color:var(--slate);line-height:1.6;margin-bottom:10px;}
-.instruction-step{background:var(--surface);border-left:3px solid var(--purple);padding:10px 13px;border-radius:0 8px 8px 0;font-size:.83rem;color:var(--ink3);margin-bottom:8px;line-height:1.5;}
-.senior-alert{background:#fef3c7;border:1.5px solid #fbbf24;border-radius:9px;padding:10px 13px;font-size:.82rem;font-weight:600;color:#92400e;margin-bottom:10px;}
-.link-card{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;text-decoration:none;color:var(--ink);font-size:.85rem;font-weight:500;margin-bottom:8px;transition:all .15s;}
-.link-card:hover{border-color:var(--purple);background:#faf5ff;}
-.senior-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
-.senior-box{display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 6px;text-decoration:none;color:var(--ink3);font-size:.72rem;font-weight:500;transition:all .15s;}
-.senior-box:hover{border-color:var(--purple);}
-.senior-box img{width:36px;height:36px;border-radius:50%;}
-.block-code{background:#0f172a;color:#e2e8f0;font-family:'DM Mono',monospace;font-size:.82rem;padding:12px 14px;border-radius:9px;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;}
-.block-image{width:100%;border-radius:10px;margin-bottom:4px;object-fit:cover;display:block;}.block-caption{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:10px;font-style:italic;}
-.img-upload-box{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);}
-.img-upload-box:hover{border-color:var(--purple);background:#faf5ff;}
-.img-upload-box input[type=file]{display:none;}
-.img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;display:none;}
-.img-uploading{color:var(--purple);font-size:.8rem;margin-top:6px;display:none;}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:none;border-radius:9px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;margin-right:4px;transition:all .15s;width:100%;}
-.btn-p{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;box-shadow:0 4px 12px rgba(109,40,217,.25);}
-.btn-p:hover{box-shadow:0 6px 18px rgba(109,40,217,.35);}
-.btn-g{background:var(--surface);color:var(--ink3);border:1.5px solid var(--border);}
-.btn-g:hover{border-color:var(--purple);color:var(--purple);}
-.btn-r{background:var(--red);color:#fff;}
-.btn-s{background:linear-gradient(135deg,#059669,#047857);color:#fff;}
-.btn-sm{padding:7px 12px;font-size:.78rem;width:auto;}
-#v-admin{padding:0;overflow:hidden;}
-.adm-nav{display:flex;border-bottom:1.5px solid var(--border);background:var(--surface);flex-shrink:0;}
-.adm-tab{flex:1;padding:11px 4px;font-size:.72rem;font-weight:600;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2.5px solid transparent;transition:all .15s;}
-.adm-tab.on{color:var(--purple);border-bottom-color:var(--purple);}
-.adm-sec{display:none;padding:16px;overflow-y:auto;max-height:calc(100vh - 24px - 88px - 44px);}
-.adm-sec.on{display:block;}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
-.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:12px;text-align:center;}
-.stat-num{font-size:1.4rem;font-weight:700;color:var(--purple);}
-.stat-lbl{font-size:.68rem;color:var(--muted);margin-top:2px;font-weight:500;}
-.save-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:11px;padding:11px 13px;margin-bottom:12px;}
-.save-banner strong{display:block;font-size:.82rem;color:#166534;margin-bottom:2px;}
-.save-banner span{font-size:.75rem;color:#15803d;}
-.adm-list-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;margin-bottom:7px;}
-.adm-item-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.adm-item-info{flex:1;min-width:0;}
-.adm-item-title{font-size:.85rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.adm-item-id{font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px;}
-.adm-item-acts{display:flex;gap:5px;flex-shrink:0;}
-.act-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .12s;}
-.act-btn:hover{border-color:var(--purple);color:var(--purple);}
-.act-btn.del:hover{border-color:var(--red);color:var(--red);}
-.sec-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
-.sec-box-title{font-size:.8rem;font-weight:700;color:var(--ink);margin-bottom:10px;}
-.sec-box.danger{border-color:#fecaca;background:#fff5f5;}
-.sec-box.danger .sec-box-title{color:var(--red);}
-.hash-note{background:#ede9fe;border:1.5px solid #c4b5fd;border-radius:9px;padding:10px 12px;font-size:.75rem;color:#5b21b6;margin-bottom:12px;line-height:1.5;}
-.loading-screen{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:999;}
-.loading-spinner{width:40px;height:40px;border:3px solid rgba(109,40,217,.2);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;}
+body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;color:var(--ink);font-size:14px;}
+
+/* ── LOADING ── */
+.loading-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999;}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(0,95,170,.25);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.loading-txt{color:rgba(255,255,255,.5);font-size:.82rem;}
-.config-screen{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;padding:20px;z-index:998;}
-.config-card{background:var(--white);border-radius:20px;padding:24px;width:100%;max-width:440px;box-shadow:var(--shlg);max-height:90vh;overflow-y:auto;}
-.config-title{font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px;}
-.config-sub{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.5;}
-.config-step{background:var(--surface);border-left:3px solid var(--purple);padding:9px 12px;border-radius:0 8px 8px 0;font-size:.78rem;color:var(--ink3);margin-bottom:7px;line-height:1.6;}
-.config-step code{background:#ede9fe;color:var(--purple);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.75rem;}
-.config-field{margin-bottom:9px;}
-.config-field label{display:block;font-size:.7rem;font-weight:700;color:var(--slate);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
-.config-field input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:'DM Mono',monospace;color:var(--ink);outline:none;}
-.config-field input:focus{border-color:var(--purple);}
-.config-err{color:var(--red);font-size:.76rem;margin-top:6px;display:none;}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
-.modal-bg.open{opacity:1;pointer-events:all;}
-.modal{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s cubic-bezier(.32,1,.45,1);padding:20px;}
-.modal-bg.open .modal{transform:translateY(0);}
-.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
-.modal-title{font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:14px;}
-.btp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
-.btp-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 4px;cursor:pointer;text-align:center;transition:all .12s;}
-.btp-btn:hover,.btp-btn.sel{border-color:var(--purple);background:#faf5ff;}
-.btp-btn .ico{font-size:16px;display:block;margin-bottom:3px;}
-.btp-btn .lbl{font-size:.65rem;font-weight:600;color:var(--ink3);}
-.btp-btn.sel .lbl{color:var(--purple);}
-.bfe{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
-.bfe-title{font-size:.7rem;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-.bfe input,.bfe textarea,.bfe select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.83rem;font-family:inherit;color:var(--ink);outline:none;margin-bottom:7px;background:var(--white);}
-.bfe input:focus,.bfe textarea:focus,.bfe select:focus{border-color:var(--purple);}
-.bfe textarea{resize:vertical;min-height:70px;}
-.blk-editor{margin-bottom:10px;}
-.blk-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;margin-bottom:5px;}
-.blk-badge{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:5px;background:#ede9fe;color:var(--purple);flex-shrink:0;text-transform:uppercase;}
-.blk-prev{font-size:.76rem;color:var(--slate);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.blk-acts{display:flex;gap:4px;flex-shrink:0;}
-.bact{width:24px;height:24px;border-radius:5px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-size:.72rem;display:flex;align-items:center;justify-content:center;}
-.bact:hover{border-color:var(--purple);color:var(--purple);}
-.bact.bad:hover{border-color:var(--red);color:var(--red);}
-.blk-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:14px;font-style:italic;}
-.prev-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
-.prev-box{background:var(--surface);border:1.5px dashed var(--border);border-radius:10px;padding:12px;min-height:50px;}
-.cnt-row{display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:6px;}
-.cnt-del{height:28px;border:1px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.8rem;}
-.confirm-body{text-align:center;padding:8px 0;}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:24px;font-size:.82rem;font-weight:500;z-index:999;transition:transform .3s cubic-bezier(.32,1,.45,1);white-space:nowrap;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.saving-pill{position:fixed;top:12px;right:12px;background:var(--purple);color:#fff;padding:5px 11px;border-radius:20px;font-size:.7rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.loading-txt{color:rgba(255,255,255,.45);font-size:.82rem;}
+
+/* ── CONFIG ── */
+.config-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;padding:24px;z-index:998;}
+.config-card{background:var(--white);border-radius:16px;padding:32px;width:100%;max-width:520px;box-shadow:0 24px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;}
+.config-title{font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.config-sub{font-size:.84rem;color:var(--muted);margin-bottom:18px;line-height:1.6;}
+.config-step{background:var(--surface);border-left:3px solid var(--blue);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.81rem;color:var(--ink3);margin-bottom:8px;line-height:1.65;}
+.config-step code{background:var(--blue-lt);color:var(--blue2);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.76rem;}
+.config-field{margin-bottom:12px;}
+.config-field label{display:block;font-size:.7rem;font-weight:700;color:var(--slate);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em;}
+.config-field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-family:'JetBrains Mono',monospace;color:var(--ink);outline:none;transition:border .15s;}
+.config-field input:focus{border-color:var(--blue);}
+.config-err{color:var(--red);font-size:.78rem;margin-top:8px;display:none;}
+
+/* ── SAVING PILL ── */
+.saving-pill{position:fixed;top:18px;right:24px;background:var(--blue);color:#fff;padding:6px 14px;border-radius:20px;font-size:.72rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
 .saving-pill.show{opacity:1;}
+
+/* ── APP SHELL — desktop layout ── */
+#appShell{display:none;}
+
+/* Topbar fixed at top */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:58px;
+  background:var(--ink);
+  display:flex;align-items:center;padding:0 28px;gap:16px;
+  z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);
+}
+.topbar-brand{display:flex;align-items:center;gap:14px;}
+.topbar-roche-img{height:28px;width:auto;filter:brightness(0) invert(1);display:block;}
+.topbar-sep{width:1px;height:22px;background:rgba(255,255,255,.15);flex-shrink:0;}
+.topbar-appname{color:rgba(255,255,255,.9);font-size:.88rem;font-weight:700;}
+.topbar-sub{color:rgba(255,255,255,.4);font-size:.7rem;font-weight:500;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.conn-badge{display:flex;align-items:center;gap:6px;color:var(--green);font-size:.73rem;font-weight:600;}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.hdr-badge{background:rgba(0,95,170,.35);color:#93c5fd;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:6px;border:1px solid rgba(0,95,170,.4);}
+.logout-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);font-size:.78rem;padding:7px 15px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s;}
+.logout-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3);}
+
+/* Sidebar fixed on left */
+.app-sidebar{
+  position:fixed;top:58px;left:0;bottom:0;width:220px;
+  background:var(--white);border-right:1px solid var(--border);
+  overflow-y:auto;padding:20px 10px;z-index:90;
+}
+.sidebar-label{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:0 10px;margin-bottom:6px;display:block;margin-top:4px;}
+.sidebar-sep{height:1px;background:var(--border2);margin:12px 0;}
+.snav-btn{
+  display:flex;align-items:center;gap:9px;width:100%;
+  padding:9px 10px;border-radius:8px;border:none;background:none;
+  font-family:'Inter',sans-serif;font-size:.84rem;font-weight:600;color:var(--ink3);
+  cursor:pointer;text-align:left;transition:all .12s;margin-bottom:2px;
+}
+.snav-btn:hover{background:var(--surface2);}
+.snav-btn.active{background:var(--blue-lt);color:var(--blue2);}
+.snav-icon{width:28px;height:28px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background .12s;}
+.snav-btn.active .snav-icon{background:var(--blue);color:#fff;}
+
+/* Main content area - offset for topbar + sidebar */
+.app-main{
+  position:fixed;top:58px;left:220px;right:0;bottom:0;
+  overflow-y:auto;padding:32px 40px;background:#eef2f7;
+}
+
+/* ── SHELL / CARD — override old phone styles ── */
+.shell{width:100%;max-width:none !important;}
+.card{
+  background:transparent !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  display:block !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+.hdr{display:none !important;}  /* hide old dark header — topbar replaces it */
+
+/* ── VIEW system ── */
+.view{display:none;animation:fi .18s ease;}
+.view.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── LOGIN — full screen overlay ── */
+#v-login{
+  position:fixed !important;
+  inset:0 !important;
+  display:none !important;
+  z-index:50;
+  background:linear-gradient(135deg,#0f172a 0%,#0a2040 100%);
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+#v-login.active{display:flex !important;}
+.login-panel{
+  display:grid;grid-template-columns:1.1fr 1fr;
+  background:var(--white);border-radius:18px;overflow:hidden;
+  width:100%;max-width:860px;
+  box-shadow:0 32px 80px rgba(0,0,0,.35);min-height:480px;
+}
+.login-left{
+  background:linear-gradient(160deg,#0a1628 0%,#0d2244 60%,#0a3060 100%);
+  padding:52px 48px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+}
+/* glowing orbs */
+.login-left::before{content:'';position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,102,204,.4) 0%,transparent 65%);pointer-events:none;}
+.login-left::after{content:'';position:absolute;bottom:-100px;left:-60px;width:320px;height:320px;background:radial-gradient(circle,rgba(0,60,140,.35) 0%,transparent 65%);pointer-events:none;}
+/* animated shimmer line */
+.login-left-shimmer{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,120,255,.8),transparent);animation:shimmer 3s ease-in-out infinite;pointer-events:none;}
+@keyframes shimmer{0%,100%{opacity:.3;transform:scaleX(.4);}50%{opacity:1;transform:scaleX(1);}}
+.login-branding{position:relative;z-index:1;}
+.login-roche-img{
+  height:44px;width:auto;
+  filter:brightness(0) invert(1);
+  display:block;
+  margin-bottom:52px;
+  opacity:.9;
+}
+.login-intern-buddy{
+  font-size:5.2rem;font-weight:900;color:#fff;
+  line-height:.9;letter-spacing:-.05em;
+  margin-bottom:18px;
+  background:linear-gradient(135deg,#fff 40%,#7fb8ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.login-intern-sub{
+  font-size:.82rem;font-weight:700;
+  color:rgba(255,255,255,.4);
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.login-footer-txt{font-size:.7rem;color:rgba(255,255,255,.22);position:relative;z-index:1;letter-spacing:.04em;}
+.login-right{padding:48px;display:flex;flex-direction:column;justify-content:center;}
+.login-form-title{font-size:1.2rem;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.login-form-sub{font-size:.84rem;color:var(--muted);margin-bottom:28px;}
+.login-icon{display:none;} /* hide old phone icon */
+.login-title,.login-sub{display:none;} /* hide old titles — replaced */
+
+/* ── FORM FIELDS ── */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.7rem;font-weight:700;color:var(--slate);margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em;}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.9rem;font-family:inherit;color:var(--ink);outline:none;transition:border .15s;background:var(--surface);}
+.field input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,95,170,.1);}
+.btn-login{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;}
+.btn-login:hover{background:var(--blue2);transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,95,170,.35);}
+.login-err{color:var(--red);font-size:.82rem;text-align:center;margin-top:10px;display:none;}
+
+/* ── MAIN MENU ── */
+.section-title{font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.view-header{margin-bottom:28px;}
+.view-title{font-size:1.35rem;font-weight:800;color:var(--ink);letter-spacing:-.02em;}
+.view-subtitle{font-size:.84rem;color:var(--muted);margin-top:4px;}
+.main-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.menu-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:22px 18px;cursor:pointer;transition:all .15s;text-align:left;width:100%;box-shadow:var(--shlg);}
+.menu-card:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,95,170,.14);}
+.menu-card:active{transform:translateY(0);}
+.menu-card-icon{font-size:28px;margin-bottom:12px;display:block;}
+.menu-card-title{font-size:.88rem;font-weight:700;color:var(--ink);line-height:1.35;}
+
+/* ── CONTENT BLOCKS ── */
+.content-card{background:var(--white);border-radius:14px;padding:32px;border:1px solid var(--border);box-shadow:var(--shlg);max-width:760px;}
+.block-heading{font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:12px;line-height:1.3;letter-spacing:-.01em;}
+.block-text{font-size:.88rem;color:var(--slate);line-height:1.7;margin-bottom:12px;}
+.instruction-step{background:var(--blue-lt);border-left:4px solid var(--blue);padding:12px 16px;border-radius:0 10px 10px 0;font-size:.88rem;color:var(--ink3);margin-bottom:10px;line-height:1.6;}
+.senior-alert{background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:12px 16px;font-size:.88rem;font-weight:700;color:#92400e;margin-bottom:12px;}
+.link-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;text-decoration:none;color:var(--ink);font-size:.88rem;font-weight:600;margin-bottom:10px;transition:all .15s;}
+.link-card:hover{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
+.senior-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.senior-box{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:16px 8px;text-decoration:none;color:var(--ink3);font-size:.75rem;font-weight:600;transition:all .15s;}
+.senior-box:hover{border-color:var(--blue);background:var(--blue-lt);}
+.senior-box img{width:44px;height:44px;border-radius:50%;}
+.block-code{background:#0f172a;color:#93c5fd;font-family:'JetBrains Mono',monospace;font-size:.83rem;padding:16px 18px;border-radius:10px;margin-bottom:12px;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
+.block-image{width:100%;border-radius:10px;margin-bottom:6px;object-fit:cover;display:block;}
+.block-caption{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:12px;font-style:italic;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;margin-right:6px;transition:all .15s;}
+.btn-p{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,95,170,.2);}
+.btn-p:hover{background:var(--blue2);transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,95,170,.3);}
+.btn-g{background:var(--surface);color:var(--ink3);border:1.5px solid var(--border);}
+.btn-g:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
+.btn-r{background:var(--red);color:#fff;}
+.btn-r:hover{background:#b91c1c;}
+.btn-s{background:var(--green);color:#fff;}
+.btn-s:hover{background:#047857;}
+.btn-sm{padding:8px 14px;font-size:.8rem;}
+
+/* ── ADMIN PANEL ── */
+.adm-layout-wrap{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:start;}
+.adm-sidebar-box{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shlg);position:sticky;top:0;}
+
+/* Override old horizontal flex for adm-nav → make it vertical */
+.adm-nav{
+  display:flex !important;
+  flex-direction:column !important;
+  border-bottom:none !important;
+  padding:8px;
+  background:none;
+}
+.adm-tab{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border-radius:8px;cursor:pointer;
+  color:var(--muted);font-size:.84rem;font-weight:600;
+  transition:all .12s;width:100%;text-align:left;
+  border-bottom:none !important;border:none;background:none;font-family:inherit;
+  margin-bottom:2px;
+}
+.adm-tab:hover{background:var(--surface2);color:var(--ink);}
+.adm-tab.on{background:var(--blue-lt);color:var(--blue2);font-weight:700;}
+
+.adm-body-box{background:var(--white);border-radius:12px;border:1px solid var(--border);box-shadow:var(--shlg);}
+.adm-sec{display:none;padding:28px;}
+.adm-sec.on{display:block;}
+.adm-sec-title{font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.adm-sec-sub{font-size:.82rem;color:var(--muted);margin-bottom:20px;}
+
+/* Keep max-height:none on adm-sec since we use page scroll */
+.adm-sec.on{max-height:none !important;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:linear-gradient(135deg,var(--blue-lt),#fff);border:1.5px solid var(--blue-mid);border-radius:12px;padding:20px;text-align:center;}
+.stat-num{font-size:2rem;font-weight:800;color:var(--blue);letter-spacing:-.04em;}
+.stat-lbl{font-size:.7rem;color:var(--muted);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.save-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;}
+.save-banner strong{display:block;font-size:.88rem;color:#166534;margin-bottom:2px;}
+.save-banner span{font-size:.78rem;color:#15803d;line-height:1.5;}
+.adm-list-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px;transition:border .12s;}
+.adm-list-item:hover{border-color:var(--blue-mid);}
+.adm-item-icon{width:42px;height:42px;border-radius:10px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.adm-item-info{flex:1;min-width:0;}
+.adm-item-title{font-size:.9rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.adm-item-id{font-size:.73rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.adm-item-acts{display:flex;gap:6px;flex-shrink:0;}
+.act-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:all .12s;}
+.act-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:#fef2f2;}
+.sec-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;}
+.sec-box-title{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:14px;}
+.hash-note{background:var(--blue-lt);border:1.5px solid var(--blue-mid);border-radius:10px;padding:13px 16px;font-size:.8rem;color:var(--blue2);margin-bottom:16px;line-height:1.6;}
+
+/* ── MODALS — centered dialog ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;padding:24px;}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:16px;width:100%;max-width:660px;max-height:88vh;overflow-y:auto;transform:scale(.96) translateY(12px);transition:transform .25s cubic-bezier(.32,1,.45,1);padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.2);}
+.modal-bg.open .modal{transform:scale(1) translateY(0);}
+.modal-handle{display:none;}
+.modal-title{font-size:1.05rem;font-weight:800;color:var(--ink);margin-bottom:18px;}
+.btp{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+.btp-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:10px 4px;cursor:pointer;text-align:center;transition:all .12s;}
+.btp-btn:hover,.btp-btn.sel{border-color:var(--blue);background:var(--blue-lt);}
+.btp-btn .ico{font-size:16px;display:block;margin-bottom:4px;}
+.btp-btn .lbl{font-size:.67rem;font-weight:700;color:var(--ink3);}
+.btp-btn.sel .lbl{color:var(--blue2);}
+.bfe{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.bfe-title{font-size:.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.bfe input,.bfe textarea,.bfe select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;font-family:inherit;color:var(--ink);outline:none;margin-bottom:8px;background:var(--white);}
+.bfe input:focus,.bfe textarea:focus,.bfe select:focus{border-color:var(--blue);}
+.bfe textarea{resize:vertical;min-height:80px;}
+.blk-editor{margin-bottom:14px;}
+.blk-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;margin-bottom:6px;}
+.blk-badge{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:5px;background:var(--blue-lt);color:var(--blue2);flex-shrink:0;text-transform:uppercase;}
+.blk-prev{font-size:.8rem;color:var(--slate);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.blk-acts{display:flex;gap:4px;flex-shrink:0;}
+.bact{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.bact:hover{border-color:var(--blue);color:var(--blue);}
+.bact.bad:hover{border-color:var(--red);color:var(--red);}
+.blk-empty{font-size:.82rem;color:var(--muted);text-align:center;padding:18px;font-style:italic;background:var(--surface);border-radius:8px;border:1.5px dashed var(--border);}
+.prev-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.prev-box{background:var(--surface);border:1.5px dashed var(--border);border-radius:10px;padding:14px;min-height:60px;}
+.cnt-row{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center;margin-bottom:8px;}
+.cnt-del{height:32px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.cnt-del:hover{background:#fef2f2;border-color:var(--red);}
+.img-upload-box{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);}
+.img-upload-box:hover{border-color:var(--blue);background:var(--blue-lt);}
+.img-upload-box input[type=file]{display:none;}
+.img-preview{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:10px;display:none;}
+.img-uploading{color:var(--blue);font-size:.82rem;margin-top:8px;display:none;font-weight:600;}
+.confirm-body{text-align:center;padding:12px 0;}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:11px 22px;border-radius:24px;font-size:.84rem;font-weight:600;z-index:999;transition:transform .3s cubic-bezier(.32,1,.45,1);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
 </style>
 </head>
 <body>
 
+<!-- Loading / config screens — same as original, no change -->
 <div class="loading-screen" id="loadingScreen">
   <div class="loading-spinner"></div>
   <div class="loading-txt" id="loadingTxt">Connecting to Firebase…</div>
@@ -157,168 +326,245 @@ body{font-family:'DM Sans',sans-serif;background:#0d1117;min-height:100vh;displa
   <div class="config-card">
     <div style="font-size:32px;margin-bottom:10px">🔥</div>
     <div class="config-title">Connect to Firebase</div>
-    <div class="config-sub">One-time setup. Your Firebase config is saved in this browser only — interns never see it.</div>
+    <div class="config-sub">One-time setup. Your Firebase config is saved in this browser only.</div>
     <div class="config-step">1. Go to <strong>console.firebase.google.com</strong> → create a project named <code>intern-buddy</code></div>
-    <div class="config-step">2. <strong>Build → Realtime Database</strong> → Create database → choose <code>Start in test mode</code></div>
-    <div class="config-step">3. <strong>Project Settings ⚙️ → Your apps → Add web app</strong> → copy the values below</div>
-    <div class="config-step">4. In <strong>Realtime Database → Rules</strong> tab, paste:<br><code>{"rules":{".read":"auth == null || auth != null",".write":"auth == null || auth != null"}}</code><br>then Publish</div>
+    <div class="config-step">2. <strong>Build → Realtime Database</strong> → Create database → <code>Start in test mode</code></div>
+    <div class="config-step">3. <strong>Project Settings ⚙️ → Your apps → Add web app</strong> → copy values below</div>
+    <div class="config-step">4. In <strong>Realtime Database → Rules</strong>: paste <code>{"rules":{".read":"auth == null || auth != null",".write":"auth == null || auth != null"}}</code> → Publish</div>
     <div class="config-field"><label>Database URL</label><input id="cfg-url" placeholder="https://intern-buddy-xxxxx-default-rtdb.firebaseio.com"></div>
     <div class="config-field"><label>API Key</label><input id="cfg-key" placeholder="AIzaSy..."></div>
     <div class="config-field"><label>Project ID</label><input id="cfg-pid" placeholder="intern-buddy-xxxxx"></div>
     <div class="config-err" id="cfg-err">Please fill in all three fields.</div>
-    <button class="btn btn-p" style="margin-top:10px;width:100%" onclick="saveConfig()">Connect & Launch →</button>
+    <button class="btn btn-p" style="margin-top:14px;width:100%;padding:13px" onclick="saveConfig()">Connect & Launch →</button>
   </div>
 </div>
 
 <div class="saving-pill" id="savingPill">☁️ Saving…</div>
 
-<div class="shell" id="appShell" style="display:none">
-  <div class="card">
-    <div class="hdr">
-      <div class="hdr-top">
-        <span class="hdr-logo">Intern Buddy Pro</span>
-        <div id="hdrRight"><span class="hdr-badge">v5 · Firebase</span></div>
-      </div>
-      <div class="hdr-body">
-        <div class="hdr-title" id="hTitle">Operations Hub</div>
-        <div class="hdr-sub" id="hSub"><span class="conn-dot"></span>Live · Firebase connected</div>
-      </div>
-    </div>
-    <div id="dynViews"></div>
-    <div class="view active" id="v-login">
-      <div style="text-align:center;margin-bottom:22px">
-        <div class="login-icon">💼</div>
-        <div class="login-title">Welcome Back</div>
-        <div class="login-sub">Sign in to continue</div>
-      </div>
-      <div class="field"><label>Username</label><input id="l-user" placeholder="Enter username" autocomplete="username"></div>
-      <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="Enter password" autocomplete="current-password"></div>
-      <button class="btn-login" onclick="doLogin()">Sign In</button>
-      <div class="login-err" id="loginErr">Incorrect username or password.</div>
-    </div>
-    <div class="view" id="v-main">
-      <div class="section-title">Quick Actions</div>
-      <div class="main-grid" id="mainGrid"></div>
-    </div>
-    <div class="view" id="v-admin" style="padding:0;overflow:hidden;max-height:none">
-      <div class="adm-nav">
-        <div class="adm-tab on" onclick="admTab('dash',this)">Dashboard</div>
-        <div class="adm-tab" onclick="admTab('menu',this)">Menu Items</div>
-        <div class="adm-tab" onclick="admTab('extra',this)">Sub-Views</div>
-        <div class="adm-tab" onclick="admTab('users',this)">Security</div>
-      </div>
-      <div id="as-dash" class="adm-sec on">
-        <div class="stat-grid">
-          <div class="stat-card"><div class="stat-num" id="stMenu">—</div><div class="stat-lbl">Menu Items</div></div>
-          <div class="stat-card"><div class="stat-num" id="stSub">—</div><div class="stat-lbl">Sub-Views</div></div>
-          <div class="stat-card"><div class="stat-num">2</div><div class="stat-lbl">Users</div></div>
-        </div>
-        <div class="save-banner">
-          <strong>🔥 Auto-Save Active</strong>
-          <span>Every change saves to Firebase instantly. All interns see updates immediately — no file needed.</span>
-        </div>
-        <button class="btn btn-p" style="margin-bottom:8px" onclick="openItemModal()">＋ New Menu Item</button>
-        <button class="btn btn-g" onclick="openExtraModal()">＋ New Sub-View</button>
-      </div>
-      <div id="as-menu" class="adm-sec">
-        <button class="btn btn-p btn-sm" style="margin-bottom:12px" onclick="openItemModal()">＋ New Menu Item</button>
-        <div id="admMenuList"></div>
-      </div>
-      <div id="as-extra" class="adm-sec">
-        <button class="btn btn-p btn-sm" style="margin-bottom:12px" onclick="openExtraModal()">＋ New Sub-View</button>
-        <div id="admExtraList"></div>
-      </div>
-      <div id="as-users" class="adm-sec">
-        <div class="hash-note">🔐 Passwords are stored as <strong>SHA-256 hashes</strong> in Firebase. Nobody — not even you — can read the actual password from the database. Only the correct password will match.</div>
-        <div class="sec-box">
-          <div class="sec-box-title">👤 Admin Account</div>
-          <div class="field" style="margin-bottom:8px"><label>Username</label><input value="admin" readonly style="opacity:.5"></div>
-          <div class="field" style="margin-bottom:8px"><label>New Password</label><input id="sec-ap" type="password" placeholder="Enter new password"></div>
-          <button class="btn btn-p btn-sm" onclick="updatePw('admin','sec-ap')">Update Admin Password</button>
-        </div>
-        <div class="sec-box">
-          <div class="sec-box-title">👤 Intern Account</div>
-          <div class="field" style="margin-bottom:8px"><label>Username</label><input value="intern" readonly style="opacity:.5"></div>
-          <div class="field" style="margin-bottom:8px"><label>New Password</label><input id="sec-ip" type="password" placeholder="Leave blank = no password required"></div>
-          <button class="btn btn-p btn-sm" onclick="updatePw('intern','sec-ip')">Update Intern Password</button>
-        </div>
+<!-- ══ APP SHELL ══ -->
+<div id="appShell">
 
+  <!-- TOPBAR (hidden until JS shows it via CSS class) -->
+  <div class="topbar" id="appTopbar" style="display:none">
+    <div class="topbar-brand">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f5/Hoffmann-La_Roche_logo.svg" class="topbar-roche-img" alt="Roche">
+      <div class="topbar-sep"></div>
+      <div>
+        <div class="topbar-appname">Intern Buddy Pro</div>
+        <div class="topbar-sub">IT Operations Hub · Roche Malaysia</div>
       </div>
+    </div>
+    <div class="topbar-right">
+      <div class="conn-badge"><span class="conn-dot"></span>Firebase Live</div>
+      <div id="hdrRight"><span class="hdr-badge">v5 · Firebase</span></div>
     </div>
   </div>
-</div>
 
-<!-- Modal: Menu Item -->
+  <!-- SIDEBAR (hidden until login) -->
+  <div class="app-sidebar" id="appSidebar" style="display:none">
+    <span class="sidebar-label">Navigation</span>
+    <button class="snav-btn" data-nav="main" onclick="window.showView&&window.showView('main')">
+      <div class="snav-icon">🏠</div>Home
+    </button>
+    <div id="sidebarItems"></div>
+    <div class="sidebar-sep"></div>
+    <span class="sidebar-label">System</span>
+    <button class="snav-btn" id="sidebarAdminBtn" style="display:none" data-nav="admin" onclick="window.showView&&window.showView('admin')">
+      <div class="snav-icon">⚙️</div>Admin Panel
+    </button>
+  </div>
+
+  <!-- MAIN CONTENT (offset by topbar+sidebar after login) -->
+  <div id="appMain" style="padding:0">
+
+    <!-- The JS-controlled .shell and .card -->
+    <div class="shell">
+      <div class="card">
+
+        <!-- JS writes to these (hidden in desktop) -->
+        <div class="hdr" style="display:none">
+          <div class="hdr-top">
+            <span class="hdr-logo">Intern Buddy Pro</span>
+            <div id="hdrRightOLD"></div>
+          </div>
+          <div class="hdr-body">
+            <div class="hdr-title" id="hTitle">Operations Hub</div>
+            <div class="hdr-sub" id="hSub"></div>
+          </div>
+        </div>
+
+        <!-- dynViews — JS injects sub-views here -->
+        <div id="dynViews"></div>
+
+        <!-- LOGIN VIEW -->
+        <div class="view active" id="v-login">
+          <div class="login-panel">
+            <div class="login-left">
+              <div class="login-left-shimmer"></div>
+              <div class="login-branding">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f5/Hoffmann-La_Roche_logo.svg" class="login-roche-img" alt="Roche">
+                <div class="login-intern-buddy">Intern<br>Buddy</div>
+                <div class="login-intern-sub">IT Operations Hub</div>
+              </div>
+              <div class="login-footer-txt">Roche Malaysia · IT Department · Internal Tool</div>
+            </div>
+            <div class="login-right">
+              <div class="login-form-title">Welcome back 👋</div>
+              <div class="login-form-sub">Sign in to continue to Intern Buddy</div>
+              <div class="field"><label>Username</label><input id="l-user" placeholder="Enter your username" autocomplete="username"></div>
+              <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="Enter your password" autocomplete="current-password"></div>
+              <button class="btn-login" onclick="doLogin()">Sign In →</button>
+              <div class="login-err" id="loginErr">Incorrect username or password.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN MENU VIEW -->
+        <div class="view" id="v-main">
+          <div style="margin-bottom:6px;font-size:1.3rem;font-weight:800;color:var(--ink);letter-spacing:-.02em">Operations Hub</div>
+          <div style="font-size:.84rem;color:var(--muted);margin-bottom:24px">Select a category to get started</div>
+          <div class="section-title">Quick Actions</div>
+          <div class="main-grid" id="mainGrid"></div>
+        </div>
+
+        <!-- ADMIN VIEW -->
+        <div class="view" id="v-admin" style="padding:0;overflow:hidden;max-height:none">
+          <div class="adm-layout-wrap">
+            <!-- Vertical tabs sidebar -->
+            <div class="adm-sidebar-box">
+              <div class="adm-nav">
+                <div class="adm-tab on" onclick="admTab('dash',this)">📊 &nbsp;Dashboard</div>
+                <div class="adm-tab" onclick="admTab('menu',this)">📋 &nbsp;Menu Items</div>
+                <div class="adm-tab" onclick="admTab('extra',this)">🗂️ &nbsp;Sub-Views</div>
+                <div class="adm-tab" onclick="admTab('users',this)">🔐 &nbsp;Security</div>
+              </div>
+            </div>
+            <!-- Content panels -->
+            <div class="adm-body-box">
+              <div id="as-dash" class="adm-sec on">
+                <div class="adm-sec-title">Dashboard</div>
+                <div class="adm-sec-sub">Overview of your app content</div>
+                <div class="stat-grid">
+                  <div class="stat-card"><div class="stat-num" id="stMenu">—</div><div class="stat-lbl">Menu Items</div></div>
+                  <div class="stat-card"><div class="stat-num" id="stSub">—</div><div class="stat-lbl">Sub-Views</div></div>
+                  <div class="stat-card"><div class="stat-num">2</div><div class="stat-lbl">Users</div></div>
+                </div>
+                <div class="save-banner">
+                  <div style="font-size:20px;flex-shrink:0">🔥</div>
+                  <div><strong>Auto-Save Active</strong><span>Every change saves to Firebase instantly. All interns see updates immediately — no file needed.</span></div>
+                </div>
+                <div style="display:flex;gap:10px">
+                  <button class="btn btn-p btn-sm" onclick="openItemModal()">＋ New Menu Item</button>
+                  <button class="btn btn-g btn-sm" onclick="openExtraModal()">＋ New Sub-View</button>
+                </div>
+              </div>
+              <div id="as-menu" class="adm-sec">
+                <div class="adm-sec-title">Menu Items</div>
+                <div class="adm-sec-sub">The cards shown on the intern home screen</div>
+                <button class="btn btn-p btn-sm" style="margin-bottom:16px" onclick="openItemModal()">＋ New Menu Item</button>
+                <div id="admMenuList"></div>
+              </div>
+              <div id="as-extra" class="adm-sec">
+                <div class="adm-sec-title">Sub-Views</div>
+                <div class="adm-sec-sub">Linked sub-pages accessed via buttons</div>
+                <button class="btn btn-p btn-sm" style="margin-bottom:16px" onclick="openExtraModal()">＋ New Sub-View</button>
+                <div id="admExtraList"></div>
+              </div>
+              <div id="as-users" class="adm-sec">
+                <div class="adm-sec-title">Security</div>
+                <div class="adm-sec-sub">Manage account passwords</div>
+                <div class="hash-note">🔐 Passwords are stored as <strong>SHA-256 hashes</strong> in Firebase. Nobody can read the actual password — only the correct password will match.</div>
+                <div class="sec-box">
+                  <div class="sec-box-title">👤 Admin Account</div>
+                  <div class="field" style="margin-bottom:10px"><label>Username</label><input value="admin" readonly style="opacity:.5"></div>
+                  <div class="field" style="margin-bottom:12px"><label>New Password</label><input id="sec-ap" type="password" placeholder="Enter new password"></div>
+                  <button class="btn btn-p btn-sm" onclick="updatePw('admin','sec-ap')">Update Admin Password</button>
+                </div>
+                <div class="sec-box">
+                  <div class="sec-box-title">👤 Intern Account</div>
+                  <div class="field" style="margin-bottom:10px"><label>Username</label><input value="intern" readonly style="opacity:.5"></div>
+                  <div class="field" style="margin-bottom:12px"><label>New Password</label><input id="sec-ip" type="password" placeholder="Leave blank = no password required"></div>
+                  <button class="btn btn-p btn-sm" onclick="updatePw('intern','sec-ip')">Update Intern Password</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /card -->
+    </div><!-- /shell -->
+  </div><!-- /appMain -->
+
+</div><!-- /appShell -->
+
+<!-- Modals — same structure, just updated styling via CSS above -->
 <div class="modal-bg" id="m-item">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="mItemTitle">Create Menu Item</div>
     <input type="hidden" id="mi-idx">
-    <div style="display:grid;grid-template-columns:64px 1fr;gap:8px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:72px 1fr;gap:10px;margin-bottom:14px">
       <div class="field" style="margin:0"><label>Icon</label><input id="mi-icon" placeholder="💻" maxlength="4"></div>
       <div class="field" style="margin:0"><label>Title</label><input id="mi-title" placeholder="Hardware Request"></div>
     </div>
-    <div class="field"><label>View ID <span style="font-weight:400;color:var(--muted);text-transform:none">(unique, no spaces — e.g. hw-1)</span></label><input id="mi-vid" style="font-family:'DM Mono',monospace"></div>
-    <div style="font-size:.68rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px">Content Blocks</div>
+    <div class="field"><label>View ID <span style="font-weight:500;color:var(--muted);text-transform:none;font-size:.78rem">(unique, no spaces — e.g. hw-1)</span></label><input id="mi-vid" style="font-family:'JetBrains Mono',monospace"></div>
+    <div style="font-size:.7rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Content Blocks</div>
     <div class="btp" id="btpItem"></div>
     <div id="bfeItem"></div>
-    <button class="btn btn-s btn-sm" id="addBlkItem" style="margin-bottom:10px">＋ Add Block</button>
+    <button class="btn btn-s btn-sm" id="addBlkItem" style="margin-bottom:12px">＋ Add Block</button>
     <div class="blk-editor" id="blkEditorItem"><div class="blk-empty">No blocks yet. Select a type above and click Add Block.</div></div>
     <div class="prev-lbl">Live Preview</div>
     <div class="prev-box" id="prevItem"></div>
-    <div style="display:flex;gap:8px;margin-top:14px">
+    <div style="display:flex;gap:10px;margin-top:18px">
       <button class="btn btn-g btn-sm" onclick="closeModal('m-item')">Cancel</button>
       <button class="btn btn-p btn-sm" style="flex:1" onclick="saveItem()">Save to Firebase ☁️</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Sub-View -->
 <div class="modal-bg" id="m-extra">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="mExtraTitle">Create Sub-View</div>
     <input type="hidden" id="ex-key">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div class="field" style="margin:0"><label>Label</label><input id="ex-lbl" placeholder="Hardware Step 2"></div>
-      <div class="field" style="margin:0"><label>View ID</label><input id="ex-vid" placeholder="hw-2" style="font-family:'DM Mono',monospace"></div>
+      <div class="field" style="margin:0"><label>View ID</label><input id="ex-vid" placeholder="hw-2" style="font-family:'JetBrains Mono',monospace"></div>
     </div>
-    <div style="font-size:.68rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px">Content Blocks</div>
+    <div style="font-size:.7rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Content Blocks</div>
     <div class="btp" id="btpExtra"></div>
     <div id="bfeExtra"></div>
-    <button class="btn btn-s btn-sm" id="addBlkExtra" style="margin-bottom:10px">＋ Add Block</button>
+    <button class="btn btn-s btn-sm" id="addBlkExtra" style="margin-bottom:12px">＋ Add Block</button>
     <div class="blk-editor" id="blkEditorExtra"><div class="blk-empty">No blocks yet. Select a type above and click Add Block.</div></div>
     <div class="prev-lbl">Live Preview</div>
     <div class="prev-box" id="prevExtra"></div>
-    <div style="display:flex;gap:8px;margin-top:14px">
+    <div style="display:flex;gap:10px;margin-top:18px">
       <button class="btn btn-g btn-sm" onclick="closeModal('m-extra')">Cancel</button>
       <button class="btn btn-p btn-sm" style="flex:1" onclick="saveExtra()">Save to Firebase ☁️</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Confirm -->
 <div class="modal-bg" id="m-confirm">
-  <div class="modal">
+  <div class="modal" style="max-width:440px">
     <div class="modal-handle"></div>
     <div class="confirm-body">
-      <div style="font-size:36px;margin-bottom:8px" id="cIcon">⚠️</div>
-      <div style="font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px" id="cTitle"></div>
+      <div style="font-size:40px;margin-bottom:12px" id="cIcon">⚠️</div>
+      <div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px" id="cTitle"></div>
     </div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:10px">
       <button class="btn btn-g btn-sm" style="flex:1" onclick="closeModal('m-confirm')">Cancel</button>
       <button class="btn btn-r btn-sm" style="flex:1" id="cOk">Confirm</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Block Edit -->
 <div class="modal-bg" id="m-block">
-  <div class="modal">
+  <div class="modal" style="max-width:540px">
     <div class="modal-handle"></div>
     <div class="modal-title">Edit Block</div>
     <div id="blkEditForm"></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
+    <div style="display:flex;gap:10px;margin-top:14px">
       <button class="btn btn-g btn-sm" onclick="closeModal('m-block')">Cancel</button>
       <button class="btn btn-p btn-sm" style="flex:1" onclick="saveBlkEdit()">Update Block</button>
     </div>
@@ -326,6 +572,96 @@ body{font-family:'DM Sans',sans-serif;background:#0d1117;min-height:100vh;displa
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Layout adapter — runs AFTER module JS, hooks into existing functions -->
+<script>
+(function(){
+  // Wait for showView to be defined by the module, then patch it
+  function patchShowView(){
+    const orig = window.showView;
+    window.showView = function(id){
+      orig(id);
+      const isLogin = (id === 'login');
+      // Toggle topbar + sidebar
+      const topbar = document.getElementById('appTopbar');
+      const sidebar = document.getElementById('appSidebar');
+      const main = document.getElementById('appMain');
+      if(topbar) topbar.style.display = isLogin ? 'none' : 'flex';
+      if(sidebar) sidebar.style.display = isLogin ? 'none' : 'block';
+      if(main){
+        main.style.position = isLogin ? '' : 'fixed';
+        main.style.top = isLogin ? '' : '58px';
+        main.style.left = isLogin ? '' : '220px';
+        main.style.right = isLogin ? '' : '0';
+        main.style.bottom = isLogin ? '' : '0';
+        main.style.overflowY = isLogin ? '' : 'auto';
+        main.style.padding = isLogin ? '0' : '32px 40px';
+        main.style.background = isLogin ? '' : '#eef2f7';
+      }
+      // Sidebar active state
+      document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector('.snav-btn[data-nav="'+id+'"]');
+      if(activeBtn) activeBtn.classList.add('active');
+      // Wrap dynView content in styled card
+      if(!['login','main','admin'].includes(id)){
+        const el = document.getElementById('v-' + id);
+        if(el && !el.dataset.wrapped){
+          el.dataset.wrapped = '1';
+          el.innerHTML = '<div class="content-card">' + el.innerHTML + '</div>';
+          el.querySelectorAll('button[data-view]').forEach(btn => {
+            btn.addEventListener('click', () => window.showView(btn.getAttribute('data-view')));
+          });
+        }
+      }
+    };
+  }
+
+  // Rebuild sidebar items from mainGrid after renderMainMenu runs
+  function buildSidebar(){
+    const sb = document.getElementById('sidebarItems');
+    if(!sb) return;
+    sb.innerHTML = '';
+    document.querySelectorAll('#mainGrid .menu-card').forEach(card => {
+      const icon = card.querySelector('.menu-card-icon')?.textContent || '';
+      const title = card.querySelector('.menu-card-title')?.textContent || '';
+      const btn = document.createElement('button');
+      btn.className = 'snav-btn';
+      btn.innerHTML = '<div class="snav-icon">' + icon + '</div>' + title;
+      btn.onclick = () => card.click();
+      sb.appendChild(btn);
+    });
+    // Admin button visibility
+    if(window.CU === 'admin'){
+      const ab = document.getElementById('sidebarAdminBtn');
+      if(ab) ab.style.display = 'flex';
+    }
+  }
+
+  // Observe mainGrid for changes
+  const observer = new MutationObserver(buildSidebar);
+
+  // Wait for DOM then start
+  function init(){
+    const mg = document.getElementById('mainGrid');
+    if(mg) observer.observe(mg, { childList: true });
+
+    // Poll for showView to be ready (module loads async)
+    const iv = setInterval(() => {
+      if(typeof window.showView === 'function'){
+        clearInterval(iv);
+        patchShowView();
+      }
+    }, 20);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
