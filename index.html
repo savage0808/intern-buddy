@@ -801,29 +801,23 @@ async function loadData(){
 }
 
 // ── FIREBASE WRITE ──
-// ── SAVE STATE ──
-let _saving=false, _saveTimer=null;
+let _saving=false,_saveTimer=null;
 function showSaving(){
   _saving=true;
   if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;}
   const p=document.getElementById('savingPill');
   if(p){p.textContent='☁️ Saving…';p.style.background='';p.classList.add('show');}
 }
-function hideSaving(ok,msg){
+function hideSaving(ok,shortMsg){
   _saving=false;
   const p=document.getElementById('savingPill');
   if(!p)return;
-  if(ok===false){
-    p.textContent='⚠️ '+(msg||'Save failed');
-    p.style.background='#dc2626';
-  }else{
-    p.textContent='✅ Saved';
-    p.style.background='#059669';
-  }
+  if(ok===false){p.textContent='⚠️ '+(shortMsg||'Save failed');p.style.background='#dc2626';}
+  else{p.textContent='✅ Saved';p.style.background='#059669';}
   _saveTimer=setTimeout(()=>{p.classList.remove('show');p.style.background='';p.textContent='☁️ Saving…';},2500);
 }
 async function fbWrite(path,val){
-  if(!DB){toast('⚠️ Not connected to Firebase — reconnect and try again.');return false;}
+  if(!DB){toast('⚠️ Not connected to Firebase. Reload the page.');return false;}
   showSaving();
   let lastErr=null;
   for(let attempt=1;attempt<=3;attempt++){
@@ -837,21 +831,20 @@ async function fbWrite(path,val){
       if(attempt<3)await new Promise(r=>setTimeout(r,800*attempt));
     }
   }
-  // All 3 attempts failed — show specific error
   const code=(lastErr&&lastErr.code)||'';
-  let errMsg='Save failed. ';
+  let msg='Save failed. ';
   if(code==='PERMISSION_DENIED'||code==='permission-denied')
-    errMsg+='Firebase rules are blocking writes. Go to Realtime Database → Rules and allow read/write.';
-  else if(code==='QUOTA_EXCEEDED'||code.includes('quota'))
-    errMsg+='⚠️ Firebase storage quota exceeded. Free up space or upgrade your plan.';
+    msg+='Firebase Rules are blocking writes — go to Realtime Database → Rules and set read/write to true.';
+  else if(code.includes('quota')||code==='QUOTA_EXCEEDED')
+    msg+='Firebase storage quota exceeded. Delete unused sub-views/images or upgrade your plan.';
   else if(!navigator.onLine)
-    errMsg+='No internet connection. Check your network.';
+    msg+='No internet connection. Check your network and try again.';
   else if(code==='UNAVAILABLE'||code==='unavailable')
-    errMsg+='Firebase is temporarily unavailable. Try again shortly.';
+    msg+='Firebase temporarily unavailable. Try again in a moment.';
   else
-    errMsg+=(lastErr&&(lastErr.message||lastErr.code))||'Unknown error. Check browser console (F12).';
-  hideSaving(false, errMsg.substring(0,40));
-  toast('⚠️ '+errMsg, 8000);
+    msg+=(lastErr&&(lastErr.message||lastErr.code))||'Unknown error — check browser console (F12).';
+  hideSaving(false,msg.substring(0,35));
+  toast('⚠️ '+msg,8000);
   return false;
 }
 
@@ -868,7 +861,7 @@ window.doLogin=async function(){
   document.getElementById('l-pass').value='';
   document.getElementById('hdrRight').innerHTML='<button class="logout-btn" onclick="doLogout()">'+u+' · Sign Out</button>';
   renderMainMenu();renderDynViews();
-  if(u==='admin'){renderAdmMenuList();renderAdmExtraList();updateStats();showView('admin');setTimeout(checkDataSize,1000);}
+  if(u==='admin'){renderAdmMenuList();renderAdmExtraList();updateStats();showView('admin');setTimeout(checkDataSize,800);}
   else showView('main');
 };
 function showLoginErr(){document.getElementById('loginErr').style.display='block';}
@@ -938,9 +931,8 @@ function renderAdmMenuList(){
     const db=document.createElement('button');db.className='act-btn del';db.textContent='✕';
     db.onclick=()=>confirm2('Delete "'+item.title+'"?','🗑️',async()=>{
       D.menuItems.splice(i,1);
-      // On delete we rewrite all menuItems to keep indices correct
-      const delOk=await fbWrite('appData/menuItems',D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}));
-      if(!delOk)return;
+      const dok=await fbWrite('appData/menuItems',D.menuItems.reduce((a,v,i)=>(a[i]=v,a),{}));
+      if(!dok)return;
       renderMainMenu();renderDynViews();renderAdmMenuList();updateStats();toast('Deleted');
     },'Delete');
     acts.appendChild(db);c.appendChild(row);
@@ -962,9 +954,8 @@ function renderAdmExtraList(){
     const db=document.createElement('button');db.className='act-btn del';db.textContent='✕';
     db.onclick=()=>confirm2('Delete "'+k+'"?','🗑️',async()=>{
       delete D.extraViews[k];
-      // Delete just this sub-view path (set to null removes it in Firebase)
-      const delOk=await fbWrite('appData/extraViews/'+k, null);
-      if(!delOk)return;
+      const eok=await fbWrite('appData/extraViews/'+k,null);
+      if(!eok)return;
       renderDynViews();renderAdmExtraList();updateStats();toast('Deleted');
     },'Delete');
     acts.appendChild(db);c.appendChild(row);
@@ -1000,7 +991,20 @@ window.openItemModal=function(idx){
   document.getElementById('mi-vid').style.opacity=isEdit?'.5':'1';
   // Load existing blocks so they can be edited
   const existingBlocks=isEdit?(D.menuItems[idx].blocks||[]):[];
-  MS.item.blocks=JSON.parse(JSON.stringify(existingBlocks));
+  // Restore real base64 image URLs from content HTML if blocks have __b64__ placeholder
+  const restoredItemBlocks=JSON.parse(JSON.stringify(existingBlocks));
+  if(isEdit&&D.menuItems[idx].content){
+    const tmp=document.createElement('div');
+    tmp.innerHTML=D.menuItems[idx].content;
+    const imgs=[...tmp.querySelectorAll('img.block-image')];
+    let imgIdx=0;
+    restoredItemBlocks.forEach(b=>{
+      if(b.type==='image'&&(b.url==='__b64__'||!b.url)){
+        if(imgs[imgIdx]&&imgs[imgIdx].src){b.url=imgs[imgIdx].src;imgIdx++;}
+      }
+    });
+  }
+  MS.item.blocks=restoredItemBlocks;
   document.getElementById('bfeItem').innerHTML='';
   document.querySelectorAll('#btpItem .btp-btn').forEach(b=>b.classList.remove('sel'));
   if(isEdit&&existingBlocks.length){
@@ -1025,7 +1029,23 @@ window.openExtraModal=function(key){
     document.getElementById('ex-lbl').value=D.extraViews[key].label||key;
     vidEl.value=key;vidEl.readOnly=true;vidEl.style.opacity='.5';
     const existingExtraBlocks=D.extraViews[key].blocks||[];
-    MS.extra.blocks=JSON.parse(JSON.stringify(existingExtraBlocks));
+    // Restore real base64 image URLs from content HTML (they may be __b64__ in Firebase blocks)
+    const restoredBlocks=JSON.parse(JSON.stringify(existingExtraBlocks));
+    if(D.extraViews[key].content){
+      const tmp=document.createElement('div');
+      tmp.innerHTML=D.extraViews[key].content;
+      const imgs=[...tmp.querySelectorAll('img.block-image')];
+      let imgIdx=0;
+      restoredBlocks.forEach(b=>{
+        if(b.type==='image'&&(b.url==='__b64__'||!b.url)){
+          if(imgs[imgIdx]&&imgs[imgIdx].src){
+            b.url=imgs[imgIdx].src;
+            imgIdx++;
+          }
+        }
+      });
+    }
+    MS.extra.blocks=restoredBlocks;
     prev.innerHTML=D.extraViews[key].content;wireButtons(prev);
     if(existingExtraBlocks.length){renderBlkList('extra');updatePreview('extra');}
     else{ed.innerHTML='<div class="blk-empty" style="color:var(--slate)">No blocks saved — add blocks below to build this page.</div>';}
@@ -1049,13 +1069,20 @@ window.saveItem=async function(){
   if(!icon||!title||!viewId)return alert('Fill in Icon, Title, and View ID');
   const blocksToSave=MS.item.blocks.length?MS.item.blocks:(isEdit&&D.menuItems[parseInt(idx)].blocks?D.menuItems[parseInt(idx)].blocks:[]);
   const c=blocksToSave.length?blocks2html(blocksToSave):isEdit?D.menuItems[parseInt(idx)].content:'<h3 class="block-heading">'+title+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>';
+  // Keep full data locally (real base64) for display and re-editing
   const item={icon,title,viewId,content:c,blocks:blocksToSave};
   if(!isEdit)D.menuItems.push(item);else D.menuItems[parseInt(idx)]=item;
   MS.item.blocks=[];
-  // Write the single changed item to its own path
-  const itemIdx=D.menuItems.length-1; // last item if new, or the edited idx
   const writeIdx=isEdit?parseInt(idx):D.menuItems.length-1;
-  const ok=await fbWrite('appData/menuItems/'+writeIdx, D.menuItems[writeIdx]);
+  // Strip base64 from blocks for Firebase write only
+  const itemForFb=Object.assign({},item,{
+    blocks:(item.blocks||[]).map(b=>{
+      if(b.type==='image'&&b.url&&b.url.startsWith('data:'))
+        return Object.assign({},b,{url:'__b64__'});
+      return b;
+    })
+  });
+  const ok=await fbWrite('appData/menuItems/'+writeIdx,itemForFb);
   if(!ok)return;
   closeModal('m-item');renderMainMenu();renderDynViews();renderAdmMenuList();updateStats();
   toast('☁️ Menu item saved!');
@@ -1072,33 +1099,33 @@ window.saveExtra=async function(){
     ?MS.extra.blocks
     :(isEdit&&D.extraViews[key]&&D.extraViews[key].blocks?D.extraViews[key].blocks:[]);
 
-  // Strip base64 images from blocks before saving to Firebase
-  // (base64 bloats Firebase quickly — images are embedded in content HTML instead)
-  const blocksForFirebase=blocksToSave.map(b=>{
-    if(b.type==='image'&&b.url&&b.url.startsWith('data:')){
-      return {...b,url:'__base64__'};  // placeholder — real image stays in content HTML
-    }
-    return b;
-  });
-
+  // Strip base64 images from blocks[] before sending to Firebase
+  // (base64 in blocks causes quota issues — the image stays in content HTML)
+  // Build rendered HTML from real blocks (with real base64 images)
   const c=blocksToSave.length
     ?blocks2html(blocksToSave)
     :(isEdit&&D.extraViews[key]
-      ?D.extraViews[key].content
-      :'<h3 class="block-heading">'+(lbl||vid)+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>');
+        ?D.extraViews[key].content
+        :'<h3 class="block-heading">'+(lbl||vid)+'</h3><button class="btn btn-g" data-view="main">&#x2190; Back</button>');
 
-  const viewData={label:lbl||vid, content:c, blocks:blocksForFirebase};
-
-  // Update local state immediately
-  D.extraViews[vid]=viewData;
+  // Local state keeps FULL data (real base64) so images display and editing works
+  const viewDataFull={label:lbl||vid,content:c,blocks:blocksToSave};
+  D.extraViews[vid]=viewDataFull;
   MS.extra.blocks=[];
   document.getElementById('ex-vid').readOnly=false;
   document.getElementById('ex-vid').style.opacity='1';
 
-  // *** KEY FIX: Write ONLY this single sub-view, not the entire extraViews object ***
-  // This prevents timeout with large data and isolates failures per sub-view
-  const ok=await fbWrite('appData/extraViews/'+vid, viewData);
-  if(!ok)return; // error already shown by fbWrite
+  // For Firebase: strip base64 from blocks[] only (content HTML keeps real images)
+  // This keeps Firebase payload small while images still display via content field
+  const blocksForFb=blocksToSave.map(b=>{
+    if(b.type==='image'&&b.url&&b.url.startsWith('data:'))
+      return Object.assign({},b,{url:'__b64__'});
+    return b;
+  });
+  const viewDataForFb={label:lbl||vid,content:c,blocks:blocksForFb};
+
+  const ok=await fbWrite('appData/extraViews/'+vid,viewDataForFb);
+  if(!ok)return;
   closeModal('m-extra');renderDynViews();renderAdmExtraList();updateStats();
   toast('☁️ Sub-view saved!');
 };
@@ -1109,8 +1136,8 @@ window.updatePw=async function(role,inputId){
   if(!D.users)D.users={};
   if(!D.users[role])D.users[role]={};
   D.users[role].hash=h;
-  const pwOk=await fbWrite('appData/users',D.users);
-  if(!pwOk)return;
+  const pok=await fbWrite('appData/users',D.users);
+  if(!pok)return;
   document.getElementById(inputId).value='';
   toast('Password updated for '+role);
 };
@@ -1219,7 +1246,7 @@ function renderBfe(type,editor){
   else if(type==='contact')html+=`<div id="${uid}-rows"></div><button type="button" class="btn btn-g btn-sm" style="width:auto" onclick="addCntRow('${uid}-rows')">+ Add Contact</button>`;
   else if(type==='code')html+=fld('Code / Command',`${uid}-c`,'textarea','e.g. gpupdate /force',true);
   else if(type==='nav')html+=fld('Label',`${uid}-nl`,'text','e.g. ← Back')+fld('Target View ID',`${uid}-nt`,'text','e.g. main')+sfld('Style',`${uid}-ns`,['ghost:Ghost (Outline)','primary:Primary (Purple)']);
-  else if(type==='image')html+=`<div class="img-upload-box" onclick="document.getElementById('${uid}-imgfile').click()"><input type="file" id="${uid}-imgfile" accept="image/*" onchange="previewImg('${uid}')"><span id="${uid}-imgicon" style="font-size:28px">🖼️</span><div style="font-size:.8rem;color:var(--muted);margin-top:4px">Tap to choose image (max ~2MB)</div><img id="${uid}-imgprev" class="img-preview" style="display:none"><div id="${uid}-imgstatus" style="display:none;font-size:.78rem;color:var(--purple);margin-top:4px;font-weight:600"></div></div><div style="font-size:.72rem;color:var(--muted);margin-top:6px;margin-bottom:4px">Or paste image URL directly:</div>` + fld('Image URL (optional)',`${uid}-imgurl`,'url','https://... or leave blank to upload file') + fld('Caption (optional)',`${uid}-imgcap`,'text','e.g. Server rack diagram');
+  else if(type==='image')html+=`<div class="img-upload-box" onclick="document.getElementById('${uid}-imgfile').click()"><input type="file" id="${uid}-imgfile" accept="image/*" onchange="previewImg('${uid}')"><span id="${uid}-imgicon" style="font-size:28px">🖼️</span><div style="font-size:.8rem;color:var(--muted);margin-top:4px">📸 Upload any image — auto-compressed to &lt;2MB</div><img id="${uid}-imgprev" class="img-preview" style="display:none"><div id="${uid}-imgstatus" style="display:none;font-size:.78rem;color:var(--purple);margin-top:4px;font-weight:600"></div></div><div style="font-size:.72rem;color:var(--muted);margin-top:6px;margin-bottom:4px">Or paste image URL directly:</div>` + fld('Image URL (optional)',`${uid}-imgurl`,'url','https://... or leave blank to upload file') + fld('Caption (optional)',`${uid}-imgcap`,'text','e.g. Server rack diagram');
   wrap.innerHTML=html;area.appendChild(wrap);
   if(type==='contact')addCntRow(`${uid}-rows`);
   MS[editor]._curType=type;MS[editor]._curUid=uid;
@@ -1256,26 +1283,29 @@ async function commitBlock(type,editor,uid){
     const status=document.getElementById(`${uid}-imgstatus`);
     if(urlVal){block={type,url:urlVal,caption:captionVal};}
     else{
-      if(status){status.style.display='block';status.textContent='⏳ Processing...';}
+      // Use the preview-compressed data if available, else compress now
+      const prevEl  = document.getElementById(uid+'-imgprev');
+      const cached  = prevEl && prevEl.dataset.compressed;
+      if(status){ status.style.display='block'; status.style.color='var(--blue)';
+                  status.textContent=cached?'⏳ Finalising…':'🔄 Compressing…'; }
       try{
-        await new Promise((resolve,reject)=>{
-          const r=new FileReader();
-          r.onload=e=>{
-            const b64=e.target.result;
-            if(b64.length>4*1024*1024){
-              reject(new Error('Image too large. Please resize to under 2MB, or paste a URL instead.'));
-            }else{
-              block={type,url:b64,caption:captionVal};
-              resolve();
-            }
-          };
-          r.onerror=()=>reject(new Error('Failed to read file'));
-          r.readAsDataURL(file);
-        });
-        if(status)status.style.display='none';
+        let finalUrl = '';
+        if(cached){
+          finalUrl = cached;
+        } else {
+          // file chosen but previewImg not yet run — compress now
+          finalUrl = await compressImage(file, 2*1024*1024, p=>{
+            if(status) status.textContent='🔄 Pass '+p.attempt+' — '+p.sizeKB+'KB → <'+p.targetKB+'KB';
+          });
+        }
+        const kb = Math.round(finalUrl.length*0.75/1024);
+        if(status){ status.style.color='var(--green)';
+                    status.textContent='✅ '+kb+'KB — ready!'; }
+        block = {type, url:finalUrl, caption:captionVal};
+        setTimeout(()=>{ if(status) status.style.display='none'; }, 1400);
       }catch(e){
-        if(status)status.style.display='none';
-        return alert(e.message);
+        if(status) status.style.display='none';
+        return alert('Image error: '+e.message);
       }
     }
   }
@@ -1287,15 +1317,90 @@ async function commitBlock(type,editor,uid){
   MS[editor]._curType=null;MS[editor]._curUid=null;
   toast('Block added ✓');
 }
-window.previewImg=function(uid){
-  const file=document.getElementById(uid+'-imgfile').files[0];
-  if(!file)return;
-  const prev=document.getElementById(uid+'-imgprev');
-  const icon=document.getElementById(uid+'-imgicon');
-  const r=new FileReader();
-  r.onload=e=>{prev.src=e.target.result;prev.style.display='block';if(icon)icon.style.display='none';};
-  r.readAsDataURL(file);
+
+// ── AUTO IMAGE COMPRESSOR ──
+// Shrinks any image (e.g. 24MB → under 2MB) using canvas
+async function compressImage(file, maxBytes, onProgress){
+  maxBytes = maxBytes || 2*1024*1024;
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = ()=>{
+      URL.revokeObjectURL(url);
+      let W = img.naturalWidth, H = img.naturalHeight;
+      // Cap longest side at 1920px first
+      const MAX = 1920;
+      if(W > MAX || H > MAX){
+        if(W >= H){ H = Math.round(H*MAX/W); W = MAX; }
+        else       { W = Math.round(W*MAX/H); H = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+
+      let quality = 0.92;
+      let result  = '';
+      let loops   = 0;
+
+      function attempt(){
+        loops++;
+        result = canvas.toDataURL('image/jpeg', quality);
+        const bytes = Math.round(result.length * 0.75); // approx base64 → bytes
+        if(onProgress) onProgress({
+          attempt: loops,
+          quality: Math.round(quality*100),
+          sizeKB:  Math.round(bytes/1024),
+          targetKB:Math.round(maxBytes/1024)
+        });
+        if(bytes <= maxBytes || quality <= 0.20){
+          resolve(result);
+        } else {
+          // Also shrink canvas dimensions when quality gets low
+          if(quality < 0.50 && (W > 1280 || H > 1280)){
+            W = Math.round(W*0.75); H = Math.round(H*0.75);
+            canvas.width = W; canvas.height = H;
+            ctx.drawImage(img, 0, 0, W, H);
+          }
+          quality = Math.max(0.20, quality - 0.12);
+          setTimeout(attempt, 0); // keep UI responsive
+        }
+      }
+      attempt();
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('Cannot load image')); };
+    img.src = url;
+  });
+}
+
+// previewImg — compresses on selection, stores result for commitBlock
+window.previewImg = async function(uid){
+  const fileEl = document.getElementById(uid+'-imgfile');
+  const file   = fileEl && fileEl.files && fileEl.files[0];
+  if(!file) return;
+  const prev   = document.getElementById(uid+'-imgprev');
+  const icon   = document.getElementById(uid+'-imgicon');
+  const status = document.getElementById(uid+'-imgstatus');
+  const origMB = (file.size/1024/1024).toFixed(1);
+  if(icon)   icon.style.display   = 'none';
+  if(status){ status.style.display='block'; status.style.color='var(--blue)';
+              status.textContent  ='🔄 Compressing '+origMB+'MB…'; }
+  try{
+    const compressed = await compressImage(file, 2*1024*1024, p=>{
+      if(status) status.textContent =
+        '🔄 Pass '+p.attempt+' — '+p.sizeKB+'KB → target <'+p.targetKB+'KB (q'+p.quality+'%)';
+    });
+    const kb = Math.round(compressed.length*0.75/1024);
+    prev.src               = compressed;
+    prev.style.display     = 'block';
+    prev.dataset.compressed= compressed; // commitBlock reads this
+    if(status){ status.style.color='var(--green)';
+                status.textContent='✅ '+origMB+'MB → '+kb+'KB  (auto-compressed)'; }
+  }catch(e){
+    if(status){ status.style.color='var(--red)'; status.textContent='⚠️ '+e.message; }
+  }
 };
+
 window.addBlock=async function(editor){
   const type=MS[editor]._curType,uid=MS[editor]._curUid;
   if(!type)return alert('Select a block type first');
@@ -1327,7 +1432,7 @@ function openBlkEdit(i,editor){
     form.innerHTML=`<div style="margin-bottom:10px">
       <label style="font-size:.7rem;font-weight:600;color:var(--slate);display:block;margin-bottom:4px">CURRENT IMAGE</label>
       <img src="${b.url}" style="width:100%;border-radius:8px;margin-bottom:8px;object-fit:cover;max-height:160px">
-    </div>` + fld('Caption','ed-imgcap','text') + `<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Replace image (optional):</div><div class="img-upload-box" onclick="document.getElementById('ed-imgfile').click()"><input type="file" id="ed-imgfile" accept="image/*" onchange="(function(){const f=document.getElementById('ed-imgfile').files[0];if(!f)return;const r=new FileReader();r.onload=e=>{document.querySelector('#blkEditForm img').src=e.target.result;};r.readAsDataURL(f);})()"><span style="font-size:.8rem;color:var(--muted)">Tap to replace image</span></div>`;
+    </div>` + fld('Caption','ed-imgcap','text') + `<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Replace image (optional):</div><div class="img-upload-box" onclick="document.getElementById('ed-imgfile').click()"><input type="file" id="ed-imgfile" accept="image/*" onchange="(async function(){const f=document.getElementById('ed-imgfile').files[0];if(!f)return;try{const c=await compressImage(f,2*1024*1024);document.querySelector('#blkEditForm img').src=c;document.getElementById('ed-imgfile').dataset.compressed=c;const kb=Math.round(c.length*0.75/1024);toast('✅ Preview: '+kb+'KB');}catch(e){toast('⚠️ '+e.message);}})()"><span style="font-size:.8rem;color:var(--muted)">Tap to replace image</span></div>`;
     form.dataset.editor=editor;
     sv('ed-imgcap',b.caption||'');
     openModal('m-block');
@@ -1349,17 +1454,14 @@ window.saveBlkEdit=async function(){
   else if(b.type==='code')b.content=gv('ed-c');
   else if(b.type==='image'){
     b.caption=gv('ed-imgcap');
-    const fileEl=document.getElementById('ed-imgfile');
-    if(fileEl&&fileEl.files&&fileEl.files[0]){
-      await new Promise((resolve,reject)=>{
-        const r=new FileReader();
-        r.onload=e=>{
-          if(e.target.result.length>4*1024*1024){reject(new Error('Image too large (max ~2MB)'));}
-          else{b.url=e.target.result;resolve();}
-        };
-        r.onerror=()=>reject(new Error('Read failed'));
-        r.readAsDataURL(fileEl.files[0]);
-      }).catch(err=>{alert(err.message);});
+    const fileEl = document.getElementById('ed-imgfile');
+    if(fileEl && fileEl.files && fileEl.files[0]){
+      try{
+        const compressed = await compressImage(fileEl.files[0], 2*1024*1024);
+        const kb = Math.round(compressed.length*0.75/1024);
+        b.url = compressed;
+        toast('✅ Image compressed to '+kb+'KB');
+      }catch(e){ alert('Image error: '+e.message); return; }
     }
   }
   closeModal('m-block');renderBlkList(editor);updatePreview(editor);toast('Block updated ✓');
@@ -1378,31 +1480,21 @@ function toast(msg,dur){
 document.getElementById('addBlkItem').onclick=()=>window.addBlock('item');
 document.getElementById('addBlkExtra').onclick=()=>window.addBlock('extra');
 document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-
 // ── DATA SIZE CHECKER ──
-// Firebase free plan: 1GB storage, 10GB/month download
-// Warn admin when approaching limits
 function checkDataSize(){
   try{
-    const json=JSON.stringify(D);
-    const bytes=new Blob([json]).size;
+    const bytes=new Blob([JSON.stringify(D)]).size;
     const mb=(bytes/1024/1024).toFixed(2);
     const kb=Math.round(bytes/1024);
-    if(bytes>8*1024*1024){
-      // Over 8MB - serious warning
-      toast('🚨 Data is '+mb+'MB! Firebase free tier has limited storage. Delete unused sub-views or remove large images.',10000);
-    }else if(bytes>4*1024*1024){
-      // Over 4MB - early heads up
-      toast('ℹ️ Data size: '+mb+'MB. If sub-views stop saving, data may be too large. Consider removing unused items.',6000);
-    }
-    console.log('📊 Intern Buddy data size: '+kb+'KB ('+mb+'MB)');
-  }catch(e){console.warn('checkDataSize error:',e);}
+    if(bytes>8*1024*1024)
+      toast('🚨 Data is '+mb+'MB! Approaching Firebase limits. Delete unused sub-views or images.',10000);
+    else if(bytes>4*1024*1024)
+      toast('ℹ️ Data is '+mb+'MB. If saves start failing, remove large images or old sub-views.',6000);
+    console.log('📊 App data size: '+kb+'KB ('+mb+'MB)');
+  }catch(e){console.warn('checkDataSize:',e);}
 }
-
-// ── ONLINE / OFFLINE ──
-window.addEventListener('offline',()=>toast('⚠️ No internet connection — saves will fail until reconnected.',6000));
-window.addEventListener('online',()=>toast('✅ Back online.',2000));
-
+window.addEventListener('offline',()=>toast('⚠️ No internet — saves will fail until reconnected.',6000));
+window.addEventListener('online', ()=>toast('✅ Back online.',2000));
 initFirebase();
 </script>
 </body>
